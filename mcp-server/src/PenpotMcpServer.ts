@@ -60,7 +60,7 @@ export class PenpotMcpServer {
         );
 
         this.tools = new Map<string, Tool<any>>();
-        this.pluginBridge = new PluginBridge(webSocketPort);
+        this.pluginBridge = new PluginBridge(this, webSocketPort);
         this.replServer = new ReplServer(this.pluginBridge, replPort);
 
         this.registerTools();
