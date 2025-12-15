@@ -44,7 +44,8 @@ export class PenpotMcpServer {
     constructor(
         private port: number = 4401,
         private webSocketPort: number = 4402,
-        replPort: number = 4403
+        replPort: number = 4403,
+        private isMultiUser: boolean = false
     ) {
         this.configLoader = new ConfigurationLoader();
         this.apiDocs = new ApiDocs();
@@ -64,6 +65,10 @@ export class PenpotMcpServer {
         this.replServer = new ReplServer(this.pluginBridge, replPort);
 
         this.registerTools();
+    }
+
+    public isMultiUserMode(): boolean {
+        return this.isMultiUser;
     }
 
     public getInitialInstructions(): string {

@@ -10,7 +10,9 @@
         "build:types": "tsc --emitDeclarationOnly --outDir dist",
         "build:full": "npm run build && npm run build:types",
         "start": "node dist/index.js",
-        "dev": "node --loader ts-node/esm src/index.ts"
+        "start:multi-user": "node dist/index.js --multi-user",
+        "dev": "node --loader ts-node/esm src/index.ts",
+        "dev:multi-user": "node --loader ts-node/esm src/index.ts --multi-user"
     },
     "keywords": [
         "mcp",

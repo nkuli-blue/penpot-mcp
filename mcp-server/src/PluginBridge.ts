@@ -25,8 +25,7 @@ export class PluginBridge {
     constructor(
         private mcpServer: PenpotMcpServer,
         private port: number,
-        private taskTimeoutSecs: number = 30,
-        private isMultiUser: boolean = false
+        private taskTimeoutSecs: number = 30
     ) {
         this.wsServer = new WebSocketServer({ port: port });
         this.setupWebSocketHandlers();
@@ -45,7 +44,7 @@ export class PluginBridge {
             const userToken = url.searchParams.get("userToken");
 
             // require userToken if running in multi-user mode
-            if (this.isMultiUser && !userToken) {
+            if (this.mcpServer.isMultiUserMode() && !userToken) {
                 this.logger.warn("Connection attempt without userToken in multi-user mode - rejecting");
                 ws.close(1008, "Missing userToken parameter");
                 return;
@@ -146,7 +145,7 @@ export class PluginBridge {
      * @throws Error if no suitable connection is found or if configuration is invalid
      */
     private getClientConnection(): ClientConnection {
-        if (this.isMultiUser) {
+        if (this.mcpServer.isMultiUserMode()) {
             const sessionContext = this.mcpServer.getSessionContext();
             if (!sessionContext?.userToken) {
                 throw new Error("No userToken found in session context. Multi-user mode requires authentication.");
