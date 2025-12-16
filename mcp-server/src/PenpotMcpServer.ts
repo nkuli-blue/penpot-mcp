@@ -67,8 +67,21 @@ export class PenpotMcpServer {
         this.registerTools();
     }
 
+    /**
+     * Indicates whether the server is running in multi-user mode,
+     * where user tokens are required for authentication.
+     */
     public isMultiUserMode(): boolean {
         return this.isMultiUser;
+    }
+
+    /**
+     * Indicates whether file system access is enabled for MCP tools.
+     * Access is enabled only in single-user mode, where the file system is assumed
+     * to belong to the user running the server locally.
+     */
+    public isFileSystemAccessEnabled(): boolean {
+        return !this.isMultiUserMode();
     }
 
     public getInitialInstructions(): string {
@@ -87,13 +100,16 @@ export class PenpotMcpServer {
     }
 
     private registerTools(): void {
+        // Create relevant tool instances (depending on file system access)
         const toolInstances: Tool<any>[] = [
             new ExecuteCodeTool(this),
             new HighLevelOverviewTool(this),
             new PenpotApiInfoTool(this, this.apiDocs),
-            new ExportShapeTool(this),
-            new ImportImageTool(this),
+            new ExportShapeTool(this), // tool adapts to file system access internally
         ];
+        if (this.isFileSystemAccessEnabled()) {
+            toolInstances.push(new ImportImageTool(this));
+        }
 
         for (const tool of toolInstances) {
             const toolName = tool.getToolName();

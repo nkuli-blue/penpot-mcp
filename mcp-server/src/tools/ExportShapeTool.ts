@@ -45,7 +45,13 @@ export class ExportShapeTool extends Tool<ExportShapeArgs> {
      * @param mcpServer - The MCP server instance
      */
     constructor(mcpServer: PenpotMcpServer) {
-        super(mcpServer, ExportShapeArgs.schema);
+        let schema: any = ExportShapeArgs.schema;
+        if (!mcpServer.isFileSystemAccessEnabled()) {
+            // remove filePath key from schema
+            schema = { ...schema };
+            delete schema.filePath;
+        }
+        super(mcpServer, schema);
     }
 
     public getToolName(): string {
@@ -53,11 +59,11 @@ export class ExportShapeTool extends Tool<ExportShapeArgs> {
     }
 
     public getToolDescription(): string {
-        return (
+        let description =
             "Exports a shape from the Penpot design to a PNG or SVG image, " +
-            "such that you can get an impression of what the shape looks like.\n" +
-            "Alternatively, you can save it to a file."
-        );
+            "such that you can get an impression of what the shape looks like.";
+        if (this.mcpServer.isFileSystemAccessEnabled()) description += "\nAlternatively, you can save it to a file.";
+        return description;
     }
 
     protected async executeCore(args: ExportShapeArgs): Promise<ToolResponse> {
@@ -89,6 +95,10 @@ export class ExportShapeTool extends Tool<ExportShapeArgs> {
                 return TextResponse.fromData(imageData);
             }
         } else {
+            // make sure file system access is enabled
+            if (!this.mcpServer.isFileSystemAccessEnabled()) {
+                throw new Error("File system access is not enabled on the MCP server!");
+            }
             // save image to file
             if (args.format === "png") {
                 FileUtils.writeBinaryFile(args.filePath, PNGImageContent.byteData(imageData));
