@@ -1,11 +1,13 @@
 {
-    "name": "penpot-plugin-starter-template",
+    "name": "penpot-mcp-plugin",
     "private": true,
-    "version": "0.0.0",
+    "version": "1.0.0",
     "type": "module",
     "scripts": {
         "dev": "vite build --watch",
-        "build": "tsc && vite build"
+        "dev:multi-user": "cross-env MULTI_USER_MODE=true vite build --watch",
+        "build": "tsc && vite build",
+        "build:multi-user": "tsc && cross-env MULTI_USER_MODE=true vite build"
     },
     "dependencies": {
         "@penpot-mcp/common": "file:../common",
@@ -14,6 +16,7 @@
         "penpot-mcp": "file:.."
     },
     "devDependencies": {
+        "cross-env": "^7.0.3",
         "typescript": "^5.8.3",
         "vite": "^7.0.5",
         "vite-live-preview": "^0.3.2"

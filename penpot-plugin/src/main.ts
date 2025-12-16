@@ -4,6 +4,10 @@ import "./style.css";
 const searchParams = new URLSearchParams(window.location.search);
 document.body.dataset.theme = searchParams.get("theme") ?? "light";
 
+// Determine whether multi-user mode is enabled based on URL parameters
+const isMultiUserMode = searchParams.get("multiUser") === "true";
+console.log("Penpot MCP multi-user mode:", isMultiUserMode);
+
 // WebSocket connection management
 let ws: WebSocket | null = null;
 const statusElement = document.getElementById("connection-status");
@@ -47,7 +51,13 @@ function connectToMcpServer(): void {
     }
 
     try {
-        ws = new WebSocket("ws://localhost:4402");
+        let wsUrl = "ws://localhost:4402";
+        if (isMultiUserMode) {
+            // TODO obtain proper userToken from penpot
+            const userToken = "dummyToken";
+            wsUrl += `?userToken=${encodeURIComponent(userToken)}`;
+        }
+        ws = new WebSocket(wsUrl);
         updateConnectionStatus("Connecting...", false);
 
         ws.onopen = () => {
