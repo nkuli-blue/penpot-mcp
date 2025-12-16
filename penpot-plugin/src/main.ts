@@ -10,10 +10,15 @@ const statusElement = document.getElementById("connection-status");
 
 /**
  * Updates the connection status display element.
+ *
+ * @param status - the base status text to display
+ * @param isConnectedState - whether the connection is in a connected state (affects color)
+ * @param message - optional additional message to append to the status
  */
-function updateConnectionStatus(status: string, isConnectedState: boolean): void {
+function updateConnectionStatus(status: string, isConnectedState: boolean, message?: string): void {
     if (statusElement) {
-        statusElement.textContent = status;
+        const displayText = message ? `${status}: ${message}` : status;
+        statusElement.textContent = displayText;
         statusElement.style.color = isConnectedState ? "var(--accent-primary)" : "var(--error-700)";
     }
 }
@@ -61,19 +66,22 @@ function connectToMcpServer(): void {
             }
         };
 
-        ws.onclose = () => {
+        ws.onclose = (event: CloseEvent) => {
             console.log("Disconnected from MCP server");
-            updateConnectionStatus("Disconnected", false);
+            const message = event.reason || undefined;
+            updateConnectionStatus("Disconnected", false, message);
             ws = null;
         };
 
         ws.onerror = (error) => {
             console.error("WebSocket error:", error);
+            // note: WebSocket error events typically don't contain detailed error messages
             updateConnectionStatus("Connection error", false);
         };
     } catch (error) {
         console.error("Failed to connect to MCP server:", error);
-        updateConnectionStatus("Connection failed", false);
+        const message = error instanceof Error ? error.message : undefined;
+        updateConnectionStatus("Connection failed", false, message);
     }
 }
 
