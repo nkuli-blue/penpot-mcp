@@ -6,10 +6,12 @@ import { Task, TaskHandler } from "./TaskHandler";
  */
 const taskHandlers: TaskHandler[] = [new ExecuteCodeTaskHandler()];
 
+// Open the plugin UI
 penpot.ui.open("Penpot MCP Plugin", `?theme=${penpot.theme}`, { width: 158, height: 200 });
 
-// Handle both legacy string messages and new request-based messages
+// Handle messages
 penpot.ui.onMessage<string | { id: string; task: string; params: any }>((message) => {
+    // Handle plugin task requests
     if (typeof message === "object" && message.task && message.id) {
         handlePluginTaskRequest(message).catch((error) => {
             console.error("Error in handlePluginTaskRequest:", error);
@@ -53,7 +55,7 @@ async function handlePluginTaskRequest(request: { id: string; task: string; para
     }
 }
 
-// Update the theme in the iframe
+// Handle theme change in the iframe
 penpot.on("themechange", (theme) => {
     penpot.ui.sendMessage({
         source: "penpot",
