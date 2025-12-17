@@ -12,36 +12,20 @@ Penpot's MCP Server is unlike any other you've seen. You get design-to- design, 
 
 ## Architecture
 
-The Penpot MCP server exposes tools to AI clients (LLMs), which support the retrieval
+The **Penpot MCP Server** exposes tools to AI clients (LLMs), which support the retrieval
 of design data as well as the modification and creation of design elements.
-The MCP server communicates with Penpot via a dedicated Penpot MCP plugin,
-which connects to the MCP server via WebSocket.
+The MCP server communicates with Penpot via the dedicated **Penpot MCP Plugin**,
+which connects to the MCP server via WebSocket.  
+This enables the LLM to carry out tasks in the context of a design file by 
+executing code that leverages the Penpot Plugin API.
+The LLM is free to write and execute arbitrary code snippets
+within the Penpot Plugin environment to accomplish its tasks.
 
 ![Architecture](resources/architecture.png)
 
-This repository is a monorepo containing four main components:
-
-1. **Common Types** (`common/`): 
-   - Shared TypeScript definitions for request/response protocol
-   - Ensures type safety across server and plugin components
-
-2. **Penpot MCP Server** (`mcp-server/`): 
-   - Provides MCP tools to LLMs for Penpot interaction
-   - Runs a WebSocket server accepting connections from the Penpot MCP plugin
-   - Implements request/response correlation with unique task IDs
-   - Handles task timeouts and proper error reporting
-
-3. **Penpot MCP Plugin** (`penpot-plugin/`):
-   - Connects to the MCP server via WebSocket
-   - Executes tasks in Penpot using the Plugin API  
-   - Sends structured responses back to the server#
-
-4. **Helper Scripts** (`python-scripts/`):
-   - Python scripts that prepare data for the MCP server (development use)
-
-The core components are written in TypeScript, rendering interactions with the
-Penpot Plugin API both natural and type-safe.
-
+This repository thus contains not only the MCP server implementation itself
+but also the supporting Penpot MCP Plugin 
+(see section [Repository Structure](#repository-structure) below).
 
 ## Demonstration
 
@@ -180,3 +164,28 @@ of the prompt input area.
 To add the Penpot MCP server to a Claude Code project, issue the command
 
     claude mcp add penpot -t http http://localhost:4401/mcp
+
+## Repository Structure
+
+This repository is a monorepo containing four main components:
+
+1. **Common Types** (`common/`):
+    - Shared TypeScript definitions for request/response protocol
+    - Ensures type safety across server and plugin components
+
+2. **Penpot MCP Server** (`mcp-server/`):
+    - Provides MCP tools to LLMs for Penpot interaction
+    - Runs a WebSocket server accepting connections from the Penpot MCP plugin
+    - Implements request/response correlation with unique task IDs
+    - Handles task timeouts and proper error reporting
+
+3. **Penpot MCP Plugin** (`penpot-plugin/`):
+    - Connects to the MCP server via WebSocket
+    - Executes tasks in Penpot using the Plugin API
+    - Sends structured responses back to the server#
+
+4. **Helper Scripts** (`python-scripts/`):
+    - Python scripts that prepare data for the MCP server (development use)
+
+The core components are written in TypeScript, rendering interactions with the
+Penpot Plugin API both natural and type-safe.
