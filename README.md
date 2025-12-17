@@ -1,13 +1,13 @@
+![mcp-server-cover-github-1](https://github.com/user-attachments/assets/dcd14e63-fecd-424f-9a50-c1b1eafe2a4f)
+
 # Penpot's Official MCP Server
 
-This project enables LLMs to interact directly with Penpot design projects 
-using the model context protocol (MCP), building on Penpot's plugin API
-to facilitate design data retrieval, modification, and creation.
+Penpot integrates a LLM layer built on the Model Context Protocol (MCP) via Penpot's Plugin API to interact with a Penpot design file. Penpot's MCP server enables LLMs to perfom data queries, transformation and creation operations.
+
+Penpot's MCP Server is unlike any other you've seen. You get design-to- design, code-to-design and design-code supercharged workflows.
 
 
-## Demonstration
-
-[![Video](https://v32155.1blu.de/penpot/PenpotFest2025_thumbnail.png)](https://v32155.1blu.de/penpot/PenpotFest2025.mp4)
+[![Penpot MCP video playlist](https://github.com/user-attachments/assets/204f1d99-ce51-41dd-a5dd-1ef739f8f089)](https://www.youtube.com/playlist?list=PLgcCPfOv5v57SKMuw1NmS0-lkAXevpn10)
 
 
 ## Architecture
@@ -43,6 +43,11 @@ The core components are written in TypeScript, rendering interactions with the
 Penpot Plugin API both natural and type-safe.
 
 
+## Demonstration
+
+[![Video](https://v32155.1blu.de/penpot/PenpotFest2025_thumbnail.png)](https://v32155.1blu.de/penpot/PenpotFest2025.mp4)
+
+
 ## Usage
 
 To use the Penpot MCP server, you must
@@ -51,6 +56,7 @@ To use the Penpot MCP server, you must
  * open the Penpot MCP plugin in Penpot and connect it to the MCP server. 
 
 Follow the steps below to enable the integration.
+
 
 ### Prerequisites
 
