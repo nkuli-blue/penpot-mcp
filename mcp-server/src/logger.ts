@@ -4,8 +4,8 @@ import { join, resolve } from "path";
 /**
  * Configuration for log file location and level.
  */
-const LOG_DIR = process.env.LOG_DIR || "logs";
-const LOG_LEVEL = process.env.LOG_LEVEL || "info";
+const LOG_DIR = process.env.PENPOT_MCP_LOG_DIR || "logs";
+const LOG_LEVEL = process.env.PENPOT_MCP_LOG_LEVEL || "info";
 
 /**
  * Generates a timestamped log file name.

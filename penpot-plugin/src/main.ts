@@ -51,7 +51,7 @@ function connectToMcpServer(): void {
     }
 
     try {
-        let wsUrl = import.meta.env.PENPOT_MCP_WEBSOCKET_URL || "ws://localhost:4402";
+        let wsUrl = PENPOT_MCP_WEBSOCKET_URL;
         if (isMultiUserMode) {
             // TODO obtain proper userToken from penpot
             const userToken = "dummyToken";

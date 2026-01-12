@@ -190,6 +190,34 @@ This repository is a monorepo containing four main components:
 The core components are written in TypeScript, rendering interactions with the
 Penpot Plugin API both natural and type-safe.
 
+## Configuration
+
+The Penpot MCP server can be configured using environment variables. All configuration
+options use the `PENPOT_MCP_` prefix for consistency.
+
+### Server Configuration
+
+| Environment Variable        | Description                                                                | Default |
+|-----------------------------|------------- --------------------------------------------------------------|---------|
+| `PENPOT_MCP_SERVER_PORT`    | Port for the HTTP/SSE server                                               | `4401` |
+| `PENPOT_MCP_WEBSOCKET_PORT` | Port for the WebSocket server (plugin connection)                          | `4402` |
+| `PENPOT_MCP_REPL_PORT`      | Port for the REPL server (development/debugging)                           | `4403` |
+| `PENPOT_MCP_SERVER_ADDRESS` | Hostname or IP address where the MCP server can be reached                 | `localhost` |
+| `PENPOT_MCP_REMOTE_MODE`    | Enable remote mode (disables file system access). Set to `true` to enable. | `false` |
+
+### Logging Configuration
+
+| Environment Variable   | Description                                          | Default |
+|------------------------|------------------------------------------------------|---------|
+| `PENPOT_MCP_LOG_LEVEL` | Log level: `trace`, `debug`, `info`, `warn`, `error` | `info` |
+| `PENPOT_MCP_LOG_DIR`   | Directory for log files                              | `logs` |
+
+### Plugin Server Configuration
+
+| Environment Variable                      | Description                                                                                                                                                                                                 | Default |
+|-------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| `PENPOT_MCP_PLUGIN_SERVER_LISTEN_ADDRESS` | Address on which the plugin web server listens. Can be a single address or a comma-separated list. For example, use `0.0.0.0` to accept connections from any address (use caution in untrusted networks).   | (local only) |
+
 ## Beyond Local Execution
 
 The above instructions describe how to run the MCP server and plugin server locally.
@@ -202,9 +230,10 @@ you may set the following environment variables to configure the two servers
 (MCP server & plugin server) appropriately:
  * `PENPOT_MCP_REMOTE_MODE=true`: This ensures that the MCP server is operating
    in remote mode, with local file system access disabled.
- * `PENPOT_MCP_WEBSOCKET_URL=ws://<your-address>:4402`: This informs the 
-   Penpot MCP Plugin about the address of the server to connect to.
- * `PENPOT_MCP_PLUGIN_SERVER_ALLOWED_HOSTS`: Set this to a comma-separated list
-   of listen addresses for the plugin web server. 
+ * `PENPOT_MCP_SERVER_ADDRESS=<your-address>`: This sets the hostname or IP address
+   where the MCP server can be reached. The Penpot MCP Plugin uses this to construct
+   the WebSocket URL as `ws://<your-address>:<port>` (default port: `4402`).
+ * `PENPOT_MCP_PLUGIN_SERVER_LISTEN_ADDRESS`: Set this to the address (or a 
+   comma-separated list of addresses) on which the plugin web server listens. 
    To accept connections from any address, use `0.0.0.0` (use caution in 
    untrusted networks).

@@ -41,12 +41,18 @@ export class PenpotMcpServer {
         sse: {} as Record<string, { transport: SSEServerTransport; userToken?: string }>,
     };
 
-    constructor(
-        private port: number = 4401,
-        private webSocketPort: number = 4402,
-        replPort: number = 4403,
-        private isMultiUser: boolean = false
-    ) {
+    private readonly port: number;
+    private readonly webSocketPort: number;
+    private readonly replPort: number;
+    public readonly serverAddress: string;
+
+    constructor(private isMultiUser: boolean = false) {
+        // read port configuration from environment variables
+        this.port = parseInt(process.env.PENPOT_MCP_SERVER_PORT ?? "4401", 10);
+        this.webSocketPort = parseInt(process.env.PENPOT_MCP_WEBSOCKET_PORT ?? "4402", 10);
+        this.replPort = parseInt(process.env.PENPOT_MCP_REPL_PORT ?? "4403", 10);
+        this.serverAddress = process.env.PENPOT_MCP_SERVER_ADDRESS ?? "localhost";
+
         this.configLoader = new ConfigurationLoader();
         this.apiDocs = new ApiDocs();
 
@@ -61,8 +67,8 @@ export class PenpotMcpServer {
         );
 
         this.tools = new Map<string, Tool<any>>();
-        this.pluginBridge = new PluginBridge(this, webSocketPort);
-        this.replServer = new ReplServer(this.pluginBridge, replPort);
+        this.pluginBridge = new PluginBridge(this, this.webSocketPort);
+        this.replServer = new ReplServer(this.pluginBridge, this.replPort);
 
         this.registerTools();
     }
@@ -224,12 +230,11 @@ export class PenpotMcpServer {
 
         return new Promise((resolve) => {
             this.app.listen(this.port, async () => {
-                this.logger.info(`Penpot MCP Server started on port ${this.port}`);
                 this.logger.info(`Multi-user mode: ${this.isMultiUserMode()}`);
                 this.logger.info(`Remote mode: ${this.isRemoteMode()}`);
-                this.logger.info(`Modern Streamable HTTP endpoint: http://localhost:${this.port}/mcp`);
-                this.logger.info(`Legacy SSE endpoint: http://localhost:${this.port}/sse`);
-                this.logger.info(`WebSocket server is on ws://localhost:${this.webSocketPort}`);
+                this.logger.info(`Modern Streamable HTTP endpoint: http://${this.serverAddress}:${this.port}/mcp`);
+                this.logger.info(`Legacy SSE endpoint: http://${this.serverAddress}:${this.port}/sse`);
+                this.logger.info(`WebSocket server URL: ws://${this.serverAddress}:${this.webSocketPort}`);
 
                 // start the REPL server
                 await this.replServer.start();
