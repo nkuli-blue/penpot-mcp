@@ -26,8 +26,8 @@ export default defineConfig({
     preview: {
         port: 4400,
         cors: true,
-        allowedHosts: process.env.VITE_ALLOWED_HOSTS
-            ? process.env.VITE_ALLOWED_HOSTS.split(",").map((h) => h.trim())
+        allowedHosts: process.env.PENPOT_MCP_PLUGIN_SERVER_ALLOWED_HOSTS
+            ? process.env.PENPOT_MCP_PLUGIN_SERVER_ALLOWED_HOSTS.split(",").map((h) => h.trim())
             : ["localhost", "0.0.0.0"],
     },
 });
