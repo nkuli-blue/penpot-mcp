@@ -76,12 +76,26 @@ export class PenpotMcpServer {
     }
 
     /**
+     * Indicates whether the server is running in remote mode.
+     *
+     * In remote mode, the server is not assumed to be accessed only by a local user on the same machine,
+     * with corresponding limitations being enforced.
+     * Remote mode can be explicitly enabled by setting the environment variable PENPOT_MCP_REMOTE_MODE
+     * to "true". Enabling multi-user mode forces remote mode, regardless of the value of the environment
+     * variable.
+     */
+    public isRemoteMode(): boolean {
+        const isRemoteModeRequested: boolean = process.env.PENPOT_MCP_REMOTE_MODE === "true";
+        return this.isMultiUserMode() || isRemoteModeRequested;
+    }
+
+    /**
      * Indicates whether file system access is enabled for MCP tools.
-     * Access is enabled only in single-user mode, where the file system is assumed
+     * Access is enabled only in local mode, where the file system is assumed
      * to belong to the user running the server locally.
      */
     public isFileSystemAccessEnabled(): boolean {
-        return !this.isMultiUserMode();
+        return !this.isRemoteMode();
     }
 
     public getInitialInstructions(): string {
@@ -211,6 +225,8 @@ export class PenpotMcpServer {
         return new Promise((resolve) => {
             this.app.listen(this.port, async () => {
                 this.logger.info(`Penpot MCP Server started on port ${this.port}`);
+                this.logger.info(`Multi-user mode: ${this.isMultiUserMode()}`);
+                this.logger.info(`Remote mode: ${this.isRemoteMode()}`);
                 this.logger.info(`Modern Streamable HTTP endpoint: http://localhost:${this.port}/mcp`);
                 this.logger.info(`Legacy SSE endpoint: http://localhost:${this.port}/sse`);
                 this.logger.info(`WebSocket server is on ws://localhost:${this.webSocketPort}`);
