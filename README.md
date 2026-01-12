@@ -198,7 +198,7 @@ options use the `PENPOT_MCP_` prefix for consistency.
 ### Server Configuration
 
 | Environment Variable        | Description                                                                | Default |
-|-----------------------------|------------- --------------------------------------------------------------|---------|
+|-----------------------------|----------------------------------------------------------------------------|---------|
 | `PENPOT_MCP_SERVER_PORT`    | Port for the HTTP/SSE server                                               | `4401` |
 | `PENPOT_MCP_WEBSOCKET_PORT` | Port for the WebSocket server (plugin connection)                          | `4402` |
 | `PENPOT_MCP_REPL_PORT`      | Port for the REPL server (development/debugging)                           | `4403` |
