@@ -22,6 +22,7 @@ async function main(): Promise<void> {
     try {
         const args = process.argv.slice(2);
         let port = 4401; // default port
+        let multiUser = false; // default to single-user mode
 
         // parse command line arguments
         for (let i = 0; i < args.length; i++) {
@@ -42,18 +43,21 @@ async function main(): Promise<void> {
                 if (i + 1 < args.length) {
                     process.env.LOG_DIR = args[i + 1];
                 }
+            } else if (args[i] === "--multi-user") {
+                multiUser = true;
             } else if (args[i] === "--help" || args[i] === "-h") {
                 logger.info("Usage: node dist/index.js [options]");
                 logger.info("Options:");
                 logger.info("  --port, -p <number>    Port number for the HTTP/SSE server (default: 4401)");
                 logger.info("  --log-level, -l <level> Log level: trace, debug, info, warn, error (default: info)");
                 logger.info("  --log-dir <path>       Directory for log files (default: mcp-server/logs)");
+                logger.info("  --multi-user           Enable multi-user mode (default: single-user)");
                 logger.info("  --help, -h             Show this help message");
                 process.exit(0);
             }
         }
 
-        const server = new PenpotMcpServer(port);
+        const server = new PenpotMcpServer(port, undefined, undefined, multiUser);
         await server.start();
 
         // keep the process alive

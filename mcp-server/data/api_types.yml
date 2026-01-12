@@ -63,7 +63,7 @@ Penpot:
         generateFontFaces(shapes: Shape[]): Promise<string>; 
         openViewer(): void; 
         createPage(): Page; 
-        openPage(page: Page): void; 
+        openPage(page: Page, newWindow?: boolean): void; 
         alignHorizontal(shapes: Shape[], direction: "center" | "left" | "right"): void; 
         alignVertical(shapes: Shape[], direction: "center" | "top" | "bottom"): void; 
         distributeHorizontal(shapes: Shape[]): void; 
@@ -768,7 +768,7 @@ Penpot:
           Returns Page
       openPage: |-
         ```
-        openPage(page): void
+        openPage(page, newWindow?): void
         ```
 
         * Changes the current open page to given page. Requires `content:read` permission.
@@ -777,6 +777,9 @@ Penpot:
           + page: Page
 
             the page to open
+          + newWindow: boolean
+
+            if true opens the page in a new window
 
           Returns void
 
@@ -986,7 +989,7 @@ Blur:
     }
     ```
 
-    Referenced by: Board, Boolean, Ellipse, Group, Image, Path, Rectangle, ShapeBase, SvgRaw, Text
+    Referenced by: Board, Boolean, Ellipse, Group, Image, Path, Rectangle, ShapeBase, SvgRaw, Text, VariantContainer
   members:
     Properties:
       id: |-
@@ -1042,6 +1045,7 @@ Board:
         addGridLayout(): GridLayout; 
         addRulerGuide(orientation: RulerGuideOrientation, value: number): RulerGuide; 
         removeRulerGuide(guide: RulerGuide): void; 
+        isVariantContainer(): boolean; 
         getPluginData(key: string): string; 
         setPluginData(key: string, value: string): void; 
         getPluginDataKeys(): string[]; 
@@ -1051,6 +1055,7 @@ Board:
         id: string; 
         name: string; 
         parent: null | Shape; 
+        parentIndex: number; 
         x: number; 
         y: number; 
         width: number; 
@@ -1109,6 +1114,7 @@ Board:
         strokes: Stroke[]; 
         layoutChild?: LayoutChildProperties; 
         layoutCell?: LayoutChildProperties; 
+        setParentIndex(index: number): void; 
         isComponentInstance(): boolean; 
         isComponentMainInstance(): boolean; 
         isComponentCopyInstance(): boolean; 
@@ -1119,11 +1125,19 @@ Board:
         componentHead(): null | Shape; 
         component(): null | LibraryComponent; 
         detach(): void; 
+        swapComponent(component: LibraryComponent): void; 
+        switchVariant(pos: number, value: string): void; 
+        combineAsVariants(ids: string[]): void; 
+        isVariantHead(): boolean; 
         resize(width: number, height: number): void; 
         rotate(angle: number, center?: null | { 
             x: number; 
             y: number; 
         }): void; 
+        bringToFront(): void; 
+        bringForward(): void; 
+        sendToBack(): void; 
+        sendBackward(): void; 
         export(config: Export): Promise<Uint8Array>; 
         interactions: Interaction[]; 
         addInteraction(trigger: Trigger, action: Action, delay?: number): Interaction; 
@@ -1137,6 +1151,7 @@ Board:
 
     * ShapeBase
       + Board
+        - VariantContainer
 
     Referenced by: CloseOverlay, CommentThread, Context, ContextTypesUtils, Flow, NavigateTo, OpenOverlay, OverlayAction, Page, Penpot, RulerGuide, Shape, ToggleOverlay
   members:
@@ -1209,6 +1224,14 @@ Board:
         ```
 
         The children shapes contained within the board.
+        When writing into this property, you can only reorder the shapes, not
+        changing the structure. If the new shapes don't match the current shapes
+        it will give a validation error.
+
+        Example
+        ```
+        board.children = board.children.reverse();
+        ```
       id: |-
         ```
         id: string
@@ -1228,6 +1251,12 @@ Board:
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
+      parentIndex: |-
+        ```
+        parentIndex: number
+        ```
+
+        Returns the index of the current shape in the parent
       x: |-
         ```
         x: number
@@ -1551,6 +1580,14 @@ Board:
           + guide: RulerGuide
 
           Returns void
+      isVariantContainer: |-
+        ```
+        isVariantContainer(): boolean
+        ```
+
+        * Returns boolean
+
+          Returns true when the current board is a VariantContainer
       getPluginData: |-
         ```
         getPluginData(key): string
@@ -1674,6 +1711,22 @@ Board:
           ```
           const sharedKeys = shape.getSharedPluginDataKeys('exampleNamespace');console.log(sharedKeys);
           ```
+      setParentIndex: |-
+        ```
+        setParentIndex(index): void
+        ```
+
+        * Changes the index inside the parent of the current shape.
+          This method will shift the indexes of the shapes around that position to
+          match the index.
+          If the index is greater than the number of elements it will positioned last.
+
+          Parameters
+          + index: number
+
+            the new index for the shape to be in
+
+          Returns void
       isComponentInstance: |-
         ```
         isComponentInstance(): boolean
@@ -1759,6 +1812,57 @@ Board:
           shape as a "basic shape"
 
           Returns void
+      swapComponent: |-
+        ```
+        swapComponent(component): void
+        ```
+
+        * TODO
+
+          Parameters
+          + component: LibraryComponent
+
+          Returns void
+      switchVariant: |-
+        ```
+        switchVariant(pos, value): void
+        ```
+
+        * Switch a VariantComponent copy to the nearest one that has the specified property value
+
+          Parameters
+          + pos: number
+
+            The position of the poroperty to update
+          + value: string
+
+            The new value of the property
+
+          Returns void
+      combineAsVariants: |-
+        ```
+        combineAsVariants(ids): void
+        ```
+
+        * Combine several standard Components into a VariantComponent. Similar to doing it with the contextual menu
+          on the Penpot interface.
+          The current shape must be a component main instance.
+
+          Parameters
+          + ids: string[]
+
+            A list of ids of the main instances of the components to combine with this one.
+
+          Returns void
+      isVariantHead: |-
+        ```
+        isVariantHead(): boolean
+        ```
+
+        * Returns boolean
+
+          Returns true when the current shape is the head of a components tree nested structure,
+          and that component is a VariantComponent
       resize: |-
         ```
         resize(width, height): void
@@ -1804,6 +1908,1040 @@ Board:
           ```
           shape.rotate(45);
           ```
+      bringToFront: |-
+        ```
+        bringToFront(): void
+        ```
+
+        * Moves the current shape to the front of its siblings
+
+          Returns void
+      bringForward: |-
+        ```
+        bringForward(): void
+        ```
+
+        * Moves the current shape one position forward in its list of siblings
+
+          Returns void
+      sendToBack: |-
+        ```
+        sendToBack(): void
+        ```
+
+        * Moves the current shape to the back of its siblings
+
+          Returns void
+      sendBackward: |-
+        ```
+        sendBackward(): void
+        ```
+
+        * Moves the current shape one position backwards in its list of siblings
+
+          Returns void
+      export: |-
+        ```
+        export(config): Promise<Uint8Array>
+        ```
+
+        * Generates an export from the current shape.
+
+          Parameters
+          + config: Export
+
+          Returns Promise<Uint8Array>
+
+          Example
+          ```
+          shape.export({ type: 'png', scale: 2 });
+          ```
+      addInteraction: |-
+        ```
+        addInteraction(trigger, action, delay?): Interaction
+        ```
+
+        * Adds a new interaction to the shape.
+
+          Parameters
+          + trigger: Trigger
+
+            defines the conditions under which the action will be triggered
+          + action: Action
+
+            defines what will be executed when the trigger happens
+          + delay: number
+
+            for the type of trigger `after-delay` will specify the time after triggered. Ignored otherwise.
+
+          Returns Interaction
+
+          Example
+          ```
+          shape.addInteraction('click', { type: 'navigate-to', destination: anotherBoard });
+          ```
+      removeInteraction: |-
+        ```
+        removeInteraction(interaction): void
+        ```
+
+        * Removes the interaction from the shape.
+
+          Parameters
+          + interaction: Interaction
+
+            is the interaction to remove from the shape
+
+          Returns void
+
+          Example
+          ```
+          shape.removeInteraction(interaction);
+          ```
+      clone: |-
+        ```
+        clone(): Shape
+        ```
+
+        * Creates a clone of the shape.
+
+          Returns Shape
+
+          Returns a new instance of the shape with identical properties.
+      remove: |-
+        ```
+        remove(): void
+        ```
+
+        * Removes the shape from its parent.
+
+          Returns void
+VariantContainer:
+  overview: |-
+    Interface VariantContainer
+    ==========================
+
+    Represents a VariantContainer in Penpot
+    This interface extends `Board` and includes properties and methods specific to VariantContainer.
+
+    ```
+    interface VariantContainer { 
+        type: "board"; 
+        clipContent: boolean; 
+        showInViewMode: boolean; 
+        grid?: GridLayout; 
+        flex?: FlexLayout; 
+        guides: Guide[]; 
+        rulerGuides: RulerGuide[]; 
+        horizontalSizing?: "auto" | "fix"; 
+        verticalSizing?: "auto" | "fix"; 
+        fills: Fill[]; 
+        children: Shape[]; 
+        appendChild(child: Shape): void; 
+        insertChild(index: number, child: Shape): void; 
+        addFlexLayout(): FlexLayout; 
+        addGridLayout(): GridLayout; 
+        addRulerGuide(orientation: RulerGuideOrientation, value: number): RulerGuide; 
+        removeRulerGuide(guide: RulerGuide): void; 
+        isVariantContainer(): boolean; 
+        variants: null | Variants; 
+        getPluginData(key: string): string; 
+        setPluginData(key: string, value: string): void; 
+        getPluginDataKeys(): string[]; 
+        getSharedPluginData(namespace: string, key: string): string; 
+        setSharedPluginData(namespace: string, key: string, value: string): void; 
+        getSharedPluginDataKeys(namespace: string): string[]; 
+        id: string; 
+        name: string; 
+        parent: null | Shape; 
+        parentIndex: number; 
+        x: number; 
+        y: number; 
+        width: number; 
+        height: number; 
+        bounds: Bounds; 
+        center: Point; 
+        blocked: boolean; 
+        hidden: boolean; 
+        visible: boolean; 
+        proportionLock: boolean; 
+        constraintsHorizontal: 
+            | "center"
+            | "left"
+            | "right"
+            | "leftright"
+            | "scale"; 
+        constraintsVertical: 
+            | "center"
+            | "top"
+            | "bottom"
+            | "scale"
+            | "topbottom"; 
+        borderRadius: number; 
+        borderRadiusTopLeft: number; 
+        borderRadiusTopRight: number; 
+        borderRadiusBottomRight: number; 
+        borderRadiusBottomLeft: number; 
+        opacity: number; 
+        blendMode: 
+            | "difference"
+            | "normal"
+            | "darken"
+            | "multiply"
+            | "color-burn"
+            | "lighten"
+            | "screen"
+            | "color-dodge"
+            | "overlay"
+            | "soft-light"
+            | "hard-light"
+            | "exclusion"
+            | "hue"
+            | "saturation"
+            | "color"
+            | "luminosity"; 
+        shadows: Shadow[]; 
+        blur?: Blur; 
+        exports: Export[]; 
+        boardX: number; 
+        boardY: number; 
+        parentX: number; 
+        parentY: number; 
+        flipX: boolean; 
+        flipY: boolean; 
+        rotation: number; 
+        strokes: Stroke[]; 
+        layoutChild?: LayoutChildProperties; 
+        layoutCell?: LayoutChildProperties; 
+        setParentIndex(index: number): void; 
+        isComponentInstance(): boolean; 
+        isComponentMainInstance(): boolean; 
+        isComponentCopyInstance(): boolean; 
+        isComponentRoot(): boolean; 
+        isComponentHead(): boolean; 
+        componentRefShape(): null | Shape; 
+        componentRoot(): null | Shape; 
+        componentHead(): null | Shape; 
+        component(): null | LibraryComponent; 
+        detach(): void; 
+        swapComponent(component: LibraryComponent): void; 
+        switchVariant(pos: number, value: string): void; 
+        combineAsVariants(ids: string[]): void; 
+        isVariantHead(): boolean; 
+        resize(width: number, height: number): void; 
+        rotate(angle: number, center?: null | { 
+            x: number; 
+            y: number; 
+        }): void; 
+        bringToFront(): void; 
+        bringForward(): void; 
+        sendToBack(): void; 
+        sendBackward(): void; 
+        export(config: Export): Promise<Uint8Array>; 
+        interactions: Interaction[]; 
+        addInteraction(trigger: Trigger, action: Action, delay?: number): Interaction; 
+        removeInteraction(interaction: Interaction): void; 
+        clone(): Shape; 
+        remove(): void; 
+    }
+    ```
+
+    Hierarchy (view full)
+
+    * Board
+      + VariantContainer
+
+    Referenced by: ContextTypesUtils
+  members:
+    Properties:
+      type: |-
+        ```
+        type
+        ```
+
+        The type of the shape, which is always 'board' for boards.
+      clipContent: |-
+        ```
+        clipContent: boolean
+        ```
+
+        When true the board will clip the children inside
+      showInViewMode: |-
+        ```
+        showInViewMode: boolean
+        ```
+
+        WHen true the board will be displayed in the view mode
+      grid: |-
+        ```
+        grid?: GridLayout
+        ```
+
+        The grid layout configuration of the board, if applicable.
+      flex: |-
+        ```
+        flex?: FlexLayout
+        ```
+
+        The flex layout configuration of the board, if applicable.
+      guides: |-
+        ```
+        guides: Guide[]
+        ```
+
+        The guides associated with the board.
+      rulerGuides: |-
+        ```
+        rulerGuides: RulerGuide[]
+        ```
+
+        The ruler guides attached to the board
+      horizontalSizing: |-
+        ```
+        horizontalSizing?: "auto" | "fix"
+        ```
+
+        The horizontal sizing behavior of the board.
+      verticalSizing: |-
+        ```
+        verticalSizing?: "auto" | "fix"
+        ```
+
+        The vertical sizing behavior of the board.
+      fills: |-
+        ```
+        fills: Fill[]
+        ```
+
+        The fills applied to the shape.
+      children: |-
+        ```
+        children: Shape[]
+        ```
+
+        The children shapes contained within the board.
+        When writing into this property, you can only reorder the shapes, not
+        changing the structure. If the new shapes don't match the current shapes
+        it will give a validation error.
+
+        Example
+        ```
+        board.children = board.children.reverse();
+        ```
+      variants: |-
+        ```
+        variants: null | Variants
+        ```
+
+        Access to the Variant interface, for attributes and actions over the full Variant (not only this VariantContainer)
+      id: |-
+        ```
+        id: string
+        ```
+
+        The unique identifier of the shape.
+      name: |-
+        ```
+        name: string
+        ```
+
+        The name of the shape.
+      parent: |-
+        ```
+        parent: null | Shape
+        ```
+
+        The parent shape. If the shape is the first level the parent will be the root shape.
+        For the root shape the parent is null
+      parentIndex: |-
+        ```
+        parentIndex: number
+        ```
+
+        Returns the index of the current shape in the parent
+      x: |-
+        ```
+        x: number
+        ```
+
+        The x-coordinate of the shape's position.
+      y: |-
+        ```
+        y: number
+        ```
+
+        The y-coordinate of the shape's position.
+      width: |-
+        ```
+        width: number
+        ```
+
+        The width of the shape.
+      height: |-
+        ```
+        height: number
+        ```
+
+        The height of the shape.
+      bounds: |-
+        ```
+        bounds: Bounds
+        ```
+
+        Returns
+
+        Returns the bounding box surrounding the current shape
+      center: |-
+        ```
+        center: Point
+        ```
+
+        Returns
+
+        Returns the geometric center of the shape
+      blocked: |-
+        ```
+        blocked: boolean
+        ```
+
+        Indicates whether the shape is blocked.
+      hidden: |-
+        ```
+        hidden: boolean
+        ```
+
+        Indicates whether the shape is hidden.
+      visible: |-
+        ```
+        visible: boolean
+        ```
+
+        Indicates whether the shape is visible.
+      proportionLock: |-
+        ```
+        proportionLock: boolean
+        ```
+
+        Indicates whether the shape has proportion lock enabled.
+      constraintsHorizontal: |-
+        ```
+        constraintsHorizontal: 
+            | "center"
+            | "left"
+            | "right"
+            | "leftright"
+            | "scale"
+        ```
+
+        The horizontal constraints applied to the shape.
+      constraintsVertical: |-
+        ```
+        constraintsVertical: 
+            | "center"
+            | "top"
+            | "bottom"
+            | "scale"
+            | "topbottom"
+        ```
+
+        The vertical constraints applied to the shape.
+      borderRadius: |-
+        ```
+        borderRadius: number
+        ```
+
+        The border radius of the shape.
+      borderRadiusTopLeft: |-
+        ```
+        borderRadiusTopLeft: number
+        ```
+
+        The border radius of the top-left corner of the shape.
+      borderRadiusTopRight: |-
+        ```
+        borderRadiusTopRight: number
+        ```
+
+        The border radius of the top-right corner of the shape.
+      borderRadiusBottomRight: |-
+        ```
+        borderRadiusBottomRight: number
+        ```
+
+        The border radius of the bottom-right corner of the shape.
+      borderRadiusBottomLeft: |-
+        ```
+        borderRadiusBottomLeft: number
+        ```
+
+        The border radius of the bottom-left corner of the shape.
+      opacity: |-
+        ```
+        opacity: number
+        ```
+
+        The opacity of the shape.
+      blendMode: |-
+        ```
+        blendMode: 
+            | "difference"
+            | "normal"
+            | "darken"
+            | "multiply"
+            | "color-burn"
+            | "lighten"
+            | "screen"
+            | "color-dodge"
+            | "overlay"
+            | "soft-light"
+            | "hard-light"
+            | "exclusion"
+            | "hue"
+            | "saturation"
+            | "color"
+            | "luminosity"
+        ```
+
+        The blend mode applied to the shape.
+      shadows: |-
+        ```
+        shadows: Shadow[]
+        ```
+
+        The shadows applied to the shape.
+      blur: |-
+        ```
+        blur?: Blur
+        ```
+
+        The blur effect applied to the shape.
+      exports: |-
+        ```
+        exports: Export[]
+        ```
+
+        The export settings of the shape.
+      boardX: |-
+        ```
+        boardX: number
+        ```
+
+        The x-coordinate of the shape relative to its board.
+      boardY: |-
+        ```
+        boardY: number
+        ```
+
+        The y-coordinate of the shape relative to its board.
+      parentX: |-
+        ```
+        parentX: number
+        ```
+
+        The x-coordinate of the shape relative to its parent.
+      parentY: |-
+        ```
+        parentY: number
+        ```
+
+        The y-coordinate of the shape relative to its parent.
+      flipX: |-
+        ```
+        flipX: boolean
+        ```
+
+        Indicates whether the shape is flipped horizontally.
+      flipY: |-
+        ```
+        flipY: boolean
+        ```
+
+        Indicates whether the shape is flipped vertically.
+      rotation: |-
+        ```
+        rotation: number
+        ```
+
+        Returns
+
+        Returns the rotation in degrees of the shape with respect to it's center.
+      strokes: |-
+        ```
+        strokes: Stroke[]
+        ```
+
+        The strokes applied to the shape.
+      layoutChild: |-
+        ```
+        layoutChild?: LayoutChildProperties
+        ```
+
+        Layout properties for children of the shape.
+      layoutCell: |-
+        ```
+        layoutCell?: LayoutChildProperties
+        ```
+
+        Layout properties for cells in a grid layout.
+      interactions: |-
+        ```
+        interactions: Interaction[]
+        ```
+
+        The interactions for the current shape.
+    Methods:
+      appendChild: |-
+        ```
+        appendChild(child): void
+        ```
+
+        * Appends a child shape to the board.
+
+          Parameters
+          + child: Shape
+
+            The child shape to append.
+
+          Returns void
+
+          Example
+          ```
+          board.appendChild(childShape);
+          ```
+      insertChild: |-
+        ```
+        insertChild(index, child): void
+        ```
+
+        * Inserts a child shape at the specified index within the board.
+
+          Parameters
+          + index: number
+
+            The index at which to insert the child shape.
+          + child: Shape
+
+            The child shape to insert.
+
+          Returns void
+
+          Example
+          ```
+          board.insertChild(0, childShape);
+          ```
+      addFlexLayout: |-
+        ```
+        addFlexLayout(): FlexLayout
+        ```
+
+        * Adds a flex layout configuration to the board (so it's necessary to create a board first of all).
+
+          Returns FlexLayout
+
+          Returns the flex layout configuration added to the board.
+
+          Example
+          ```
+          const board = penpot.createBoard();const flex = board.addFlexLayout();// You can change the flex properties as follows.flex.dir = "column";flex.wrap = "wrap";flex.alignItems = "center";flex.justifyContent = "center";flex.horizontalSizing = "fill";flex.verticalSizing = "fill";
+          ```
+      addGridLayout: |-
+        ```
+        addGridLayout(): GridLayout
+        ```
+
+        * Adds a grid layout configuration to the board (so it's necessary to create a board first of all). You can add rows and columns, check addRow/addColumn.
+
+          Returns GridLayout
+
+          Returns the grid layout configuration added to the board.
+
+          Example
+          ```
+          const board = penpot.createBoard();const grid = board.addGridLayout();// You can change the grid properties as follows.grid.alignItems = "center";grid.justifyItems = "start";grid.rowGap = 10;grid.columnGap = 10;grid.verticalPadding = 5;grid.horizontalPadding = 5
+          ```
+      addRulerGuide: |-
+        ```
+        addRulerGuide(orientation, value): RulerGuide
+        ```
+
+        * Creates a new ruler guide.
+
+          Parameters
+          + orientation: RulerGuideOrientation
+          + value: number
+
+          Returns RulerGuide
+      removeRulerGuide: |-
+        ```
+        removeRulerGuide(guide): void
+        ```
+
+        * Removes the `guide` from the current page.
+
+          Parameters
+          + guide: RulerGuide
+
+          Returns void
+      isVariantContainer: |-
+        ```
+        isVariantContainer(): boolean
+        ```
+
+        * Returns boolean
+
+          Returns true when the current board is a VariantContainer
+      getPluginData: |-
+        ```
+        getPluginData(key): string
+        ```
+
+        * Retrieves the data for our own plugin, given a specific key.
+
+          Parameters
+          + key: string
+
+            The key for which to retrieve the data.
+
+          Returns string
+
+          Returns the data associated with the key as a string.
+
+          Example
+          ```
+          const data = shape.getPluginData('exampleKey');console.log(data);
+          ```
+      setPluginData: |-
+        ```
+        setPluginData(key, value): void
+        ```
+
+        * Sets the plugin-specific data for the given key.
+
+          Parameters
+          + key: string
+
+            The key for which to set the data.
+          + value: string
+
+            The data to set for the key.
+
+          Returns void
+
+          Example
+          ```
+          shape.setPluginData('exampleKey', 'exampleValue');
+          ```
+      getPluginDataKeys: |-
+        ```
+        getPluginDataKeys(): string[]
+        ```
+
+        * Retrieves all the keys for the plugin-specific data.
+
+          Returns string[]
+
+          Returns an array of strings representing all the keys.
+
+          Example
+          ```
+          const keys = shape.getPluginDataKeys();console.log(keys);
+          ```
+      getSharedPluginData: |-
+        ```
+        getSharedPluginData(namespace, key): string
+        ```
+
+        * If we know the namespace of an external plugin, this is the way to get their data.
+
+          Parameters
+          + namespace: string
+
+            The namespace for the shared data.
+          + key: string
+
+            The key for which to retrieve the data.
+
+          Returns string
+
+          Returns the shared data associated with the key as a string.
+
+          Example
+          ```
+          const sharedData = shape.getSharedPluginData('exampleNamespace', 'exampleKey');console.log(sharedData);
+          ```
+      setSharedPluginData: |-
+        ```
+        setSharedPluginData(namespace, key, value): void
+        ```
+
+        * Sets the shared plugin-specific data for the given namespace and key.
+
+          Parameters
+          + namespace: string
+
+            The namespace for the shared data.
+          + key: string
+
+            The key for which to set the data.
+          + value: string
+
+            The data to set for the key.
+
+          Returns void
+
+          Example
+          ```
+          shape.setSharedPluginData('exampleNamespace', 'exampleKey', 'exampleValue');
+          ```
+      getSharedPluginDataKeys: |-
+        ```
+        getSharedPluginDataKeys(namespace): string[]
+        ```
+
+        * Retrieves all the keys for the shared plugin-specific data in the given namespace.
+
+          Parameters
+          + namespace: string
+
+            The namespace for the shared data.
+
+          Returns string[]
+
+          Returns an array of strings representing all the keys in the namespace.
+
+          Example
+          ```
+          const sharedKeys = shape.getSharedPluginDataKeys('exampleNamespace');console.log(sharedKeys);
+          ```
+      setParentIndex: |-
+        ```
+        setParentIndex(index): void
+        ```
+
+        * Changes the index inside the parent of the current shape.
+          This method will shift the indexes of the shapes around that position to
+          match the index.
+          If the index is greater than the number of elements it will positioned last.
+
+          Parameters
+          + index: number
+
+            the new index for the shape to be in
+
+          Returns void
+      isComponentInstance: |-
+        ```
+        isComponentInstance(): boolean
+        ```
+
+        * Returns boolean
+
+          Returns true if the current shape is inside a component instance
+      isComponentMainInstance: |-
+        ```
+        isComponentMainInstance(): boolean
+        ```
+
+        * Returns boolean
+
+          Returns true if the current shape is inside a component **main** instance
+      isComponentCopyInstance: |-
+        ```
+        isComponentCopyInstance(): boolean
+        ```
+
+        * Returns boolean
+
+          Returns true if the current shape is inside a component **copy** instance
+      isComponentRoot: |-
+        ```
+        isComponentRoot(): boolean
+        ```
+
+        * Returns boolean
+
+          Returns true when the current shape is the root of a component tree
+      isComponentHead: |-
+        ```
+        isComponentHead(): boolean
+        ```
+
+        * Returns boolean
+
+          Returns true when the current shape is the head of a components tree nested structure
+      componentRefShape: |-
+        ```
+        componentRefShape(): null | Shape
+        ```
+
+        * Returns null | Shape
+
+          Returns the equivalent shape in the component main instance. If the current shape is inside a
+          main instance will return `null`;
+      componentRoot: |-
+        ```
+        componentRoot(): null | Shape
+        ```
+
+        * Returns null | Shape
+
+          Returns the root of the component tree structure for the current shape. If the current shape
+          is already a root will return itself.
+      componentHead: |-
+        ```
+        componentHead(): null | Shape
+        ```
+
+        * Returns null | Shape
+
+          Returns the head of the component tree structure for the current shape. If the current shape
+          is already a head will return itself.
+      component: |-
+        ```
+        component(): null | LibraryComponent
+        ```
+
+        * Returns null | LibraryComponent
+
+          If the shape is a component instance, returns the reference to the component associated
+          otherwise will return null
+      detach: |-
+        ```
+        detach(): void
+        ```
+
+        * If the current shape is a component it will remove the component information and leave the
+          shape as a "basic shape"
+
+          Returns void
+      swapComponent: |-
+        ```
+        swapComponent(component): void
+        ```
+
+        * TODO
+
+          Parameters
+          + component: LibraryComponent
+
+          Returns void
+      switchVariant: |-
+        ```
+        switchVariant(pos, value): void
+        ```
+
+        * Switch a VariantComponent copy to the nearest one that has the specified property value
+
+          Parameters
+          + pos: number
+
+            The position of the poroperty to update
+          + value: string
+
+            The new value of the property
+
+          Returns void
+      combineAsVariants: |-
+        ```
+        combineAsVariants(ids): void
+        ```
+
+        * Combine several standard Components into a VariantComponent. Similar to doing it with the contextual menu
+          on the Penpot interface.
+          The current shape must be a component main instance.
+
+          Parameters
+          + ids: string[]
+
+            A list of ids of the main instances of the components to combine with this one.
+
+          Returns void
+      isVariantHead: |-
+        ```
+        isVariantHead(): boolean
+        ```
+
+        * Returns boolean
+
+          Returns true when the current shape is the head of a components tree nested structure,
+          and that component is a VariantComponent
+      resize: |-
+        ```
+        resize(width, height): void
+        ```
+
+        * Resizes the shape to the specified width and height.
+
+          Parameters
+          + width: number
+
+            The new width of the shape.
+          + height: number
+
+            The new height of the shape.
+
+          Returns void
+
+          Example
+          ```
+          shape.resize(200, 100);
+          ```
+      rotate: |-
+        ```
+        rotate(angle, center?): void
+        ```
+
+        * Rotates the shape in relation with the given center.
+
+          Parameters
+          + angle: number
+
+            Angle in degrees to rotate.
+          + center: null | {   
+                x: number;   
+                y: number;   
+            }
+
+            Center of the transform rotation. If not send will use the geometri center of the shapes.
+
+          Returns void
+
+          Example
+          ```
+          shape.rotate(45);
+          ```
+      bringToFront: |-
+        ```
+        bringToFront(): void
+        ```
+
+        * Moves the current shape to the front of its siblings
+
+          Returns void
+      bringForward: |-
+        ```
+        bringForward(): void
+        ```
+
+        * Moves the current shape one position forward in its list of siblings
+
+          Returns void
+      sendToBack: |-
+        ```
+        sendToBack(): void
+        ```
+
+        * Moves the current shape to the back of its siblings
+
+          Returns void
+      sendBackward: |-
+        ```
+        sendBackward(): void
+        ```
+
+        * Moves the current shape one position backwards in its list of siblings
+
+          Returns void
       export: |-
         ```
         export(config): Promise<Uint8Array>
@@ -1892,7 +3030,9 @@ Boolean:
     interface Boolean { 
         type: "boolean"; 
         toD(): string; 
-        content: PathCommand[]; 
+        content: string; 
+        d: string; 
+        commands: PathCommand[]; 
         fills: Fill[]; 
         children: Shape[]; 
         appendChild(child: Shape): void; 
@@ -1906,6 +3046,7 @@ Boolean:
         id: string; 
         name: string; 
         parent: null | Shape; 
+        parentIndex: number; 
         x: number; 
         y: number; 
         width: number; 
@@ -1964,6 +3105,7 @@ Boolean:
         strokes: Stroke[]; 
         layoutChild?: LayoutChildProperties; 
         layoutCell?: LayoutChildProperties; 
+        setParentIndex(index: number): void; 
         isComponentInstance(): boolean; 
         isComponentMainInstance(): boolean; 
         isComponentCopyInstance(): boolean; 
@@ -1974,11 +3116,19 @@ Boolean:
         componentHead(): null | Shape; 
         component(): null | LibraryComponent; 
         detach(): void; 
+        swapComponent(component: LibraryComponent): void; 
+        switchVariant(pos: number, value: string): void; 
+        combineAsVariants(ids: string[]): void; 
+        isVariantHead(): boolean; 
         resize(width: number, height: number): void; 
         rotate(angle: number, center?: null | { 
             x: number; 
             y: number; 
         }): void; 
+        bringToFront(): void; 
+        bringForward(): void; 
+        sendToBack(): void; 
+        sendBackward(): void; 
         export(config: Export): Promise<Uint8Array>; 
         interactions: Interaction[]; 
         addInteraction(trigger: Trigger, action: Action, delay?: number): Interaction; 
@@ -2004,7 +3154,23 @@ Boolean:
         The type of the shape, which is always 'bool' for boolean operation shapes.
       content: |-
         ```
-        content: PathCommand[]
+        content: string
+        ```
+
+        The content of the boolean shape, defined as the path string.
+
+        Deprecated
+
+        Use either `d` or `commands`.
+      d: |-
+        ```
+        d: string
+        ```
+
+        The content of the boolean shape, defined as the path string.
+      commands: |-
+        ```
+        commands: PathCommand[]
         ```
 
         The content of the boolean shape, defined as an array of path commands.
@@ -2041,6 +3207,12 @@ Boolean:
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
+      parentIndex: |-
+        ```
+        parentIndex: number
+        ```
+
+        Returns the index of the current shape in the parent
       x: |-
         ```
         x: number
@@ -2282,6 +3454,10 @@ Boolean:
           Returns string
 
           Returns the path data (d attribute) as a string.
+
+          Deprecated
+
+          Use the `d` attribute
       appendChild: |-
         ```
         appendChild(child): void
@@ -2444,6 +3620,22 @@ Boolean:
           ```
           const sharedKeys = shape.getSharedPluginDataKeys('exampleNamespace');console.log(sharedKeys);
           ```
+      setParentIndex: |-
+        ```
+        setParentIndex(index): void
+        ```
+
+        * Changes the index inside the parent of the current shape.
+          This method will shift the indexes of the shapes around that position to
+          match the index.
+          If the index is greater than the number of elements it will positioned last.
+
+          Parameters
+          + index: number
+
+            the new index for the shape to be in
+
+          Returns void
       isComponentInstance: |-
         ```
         isComponentInstance(): boolean
@@ -2529,6 +3721,57 @@ Boolean:
           shape as a "basic shape"
 
           Returns void
+      swapComponent: |-
+        ```
+        swapComponent(component): void
+        ```
+
+        * TODO
+
+          Parameters
+          + component: LibraryComponent
+
+          Returns void
+      switchVariant: |-
+        ```
+        switchVariant(pos, value): void
+        ```
+
+        * Switch a VariantComponent copy to the nearest one that has the specified property value
+
+          Parameters
+          + pos: number
+
+            The position of the poroperty to update
+          + value: string
+
+            The new value of the property
+
+          Returns void
+      combineAsVariants: |-
+        ```
+        combineAsVariants(ids): void
+        ```
+
+        * Combine several standard Components into a VariantComponent. Similar to doing it with the contextual menu
+          on the Penpot interface.
+          The current shape must be a component main instance.
+
+          Parameters
+          + ids: string[]
+
+            A list of ids of the main instances of the components to combine with this one.
+
+          Returns void
+      isVariantHead: |-
+        ```
+        isVariantHead(): boolean
+        ```
+
+        * Returns boolean
+
+          Returns true when the current shape is the head of a components tree nested structure,
+          and that component is a VariantComponent
       resize: |-
         ```
         resize(width, height): void
@@ -2574,6 +3817,38 @@ Boolean:
           ```
           shape.rotate(45);
           ```
+      bringToFront: |-
+        ```
+        bringToFront(): void
+        ```
+
+        * Moves the current shape to the front of its siblings
+
+          Returns void
+      bringForward: |-
+        ```
+        bringForward(): void
+        ```
+
+        * Moves the current shape one position forward in its list of siblings
+
+          Returns void
+      sendToBack: |-
+        ```
+        sendToBack(): void
+        ```
+
+        * Moves the current shape to the back of its siblings
+
+          Returns void
+      sendBackward: |-
+        ```
+        sendBackward(): void
+        ```
+
+        * Moves the current shape one position backwards in its list of siblings
+
+          Returns void
       export: |-
         ```
         export(config): Promise<Uint8Array>
@@ -3239,7 +4514,7 @@ Context:
         removeListener(listenerId: symbol): void; 
         openViewer(): void; 
         createPage(): Page; 
-        openPage(page: Page): void; 
+        openPage(page: Page, newWindow?: boolean): void; 
         alignHorizontal(shapes: Shape[], direction: "center" | "left" | "right"): void; 
         alignVertical(shapes: Shape[], direction: "center" | "top" | "bottom"): void; 
         distributeHorizontal(shapes: Shape[]): void; 
@@ -3771,7 +5046,7 @@ Context:
           Returns Page
       openPage: |-
         ```
-        openPage(page): void
+        openPage(page, newWindow?): void
         ```
 
         * Changes the current open page to given page. Requires `content:read` permission.
@@ -3780,6 +5055,9 @@ Context:
           + page: Page
 
             the page to open
+          + newWindow: boolean
+
+            if true opens the page in a new window
 
           Returns void
 
@@ -3932,6 +5210,8 @@ ContextTypesUtils:
         isText(shape: Shape): shape is Text; 
         isEllipse(shape: Shape): shape is Ellipse; 
         isSVG(shape: Shape): shape is SvgRaw; 
+        isVariantContainer(shape: Shape): shape is VariantContainer; 
+        isVariantComponent(component: LibraryComponent): component is LibraryVariantComponent; 
     }
     ```
 
@@ -4073,6 +5353,36 @@ ContextTypesUtils:
           Returns shape is SvgRaw
 
           Returns true if the shape is a SvgRaw, otherwise false.
+      isVariantContainer: |-
+        ```
+        isVariantContainer(shape): shape is VariantContainer
+        ```
+
+        * Checks if the given shape is a variant container.
+
+          Parameters
+          + shape: Shape
+
+            The shape to check.
+
+          Returns shape is VariantContainer
+
+          Returns true if the shape is a variant container, otherwise false.
+      isVariantComponent: |-
+        ```
+        isVariantComponent(component): component is LibraryVariantComponent
+        ```
+
+        * Checks if the given component is a VariantComponent.
+
+          Parameters
+          + component: LibraryComponent
+
+            The component to check.
+
+          Returns component is LibraryVariantComponent
+
+          Returns true if the component is a VariantComponent, otherwise false.
 ContextUtils:
   overview: |-
     Interface ContextUtils
@@ -4182,6 +5492,7 @@ Ellipse:
         id: string; 
         name: string; 
         parent: null | Shape; 
+        parentIndex: number; 
         x: number; 
         y: number; 
         width: number; 
@@ -4240,6 +5551,7 @@ Ellipse:
         strokes: Stroke[]; 
         layoutChild?: LayoutChildProperties; 
         layoutCell?: LayoutChildProperties; 
+        setParentIndex(index: number): void; 
         isComponentInstance(): boolean; 
         isComponentMainInstance(): boolean; 
         isComponentCopyInstance(): boolean; 
@@ -4250,11 +5562,19 @@ Ellipse:
         componentHead(): null | Shape; 
         component(): null | LibraryComponent; 
         detach(): void; 
+        swapComponent(component: LibraryComponent): void; 
+        switchVariant(pos: number, value: string): void; 
+        combineAsVariants(ids: string[]): void; 
+        isVariantHead(): boolean; 
         resize(width: number, height: number): void; 
         rotate(angle: number, center?: null | { 
             x: number; 
             y: number; 
         }): void; 
+        bringToFront(): void; 
+        bringForward(): void; 
+        sendToBack(): void; 
+        sendBackward(): void; 
         export(config: Export): Promise<Uint8Array>; 
         interactions: Interaction[]; 
         addInteraction(trigger: Trigger, action: Action, delay?: number): Interaction; 
@@ -4303,6 +5623,12 @@ Ellipse:
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
+      parentIndex: |-
+        ```
+        parentIndex: number
+        ```
+
+        Returns the index of the current shape in the parent
       x: |-
         ```
         x: number
@@ -4657,6 +5983,22 @@ Ellipse:
           ```
           const sharedKeys = shape.getSharedPluginDataKeys('exampleNamespace');console.log(sharedKeys);
           ```
+      setParentIndex: |-
+        ```
+        setParentIndex(index): void
+        ```
+
+        * Changes the index inside the parent of the current shape.
+          This method will shift the indexes of the shapes around that position to
+          match the index.
+          If the index is greater than the number of elements it will positioned last.
+
+          Parameters
+          + index: number
+
+            the new index for the shape to be in
+
+          Returns void
       isComponentInstance: |-
         ```
         isComponentInstance(): boolean
@@ -4742,6 +6084,57 @@ Ellipse:
           shape as a "basic shape"
 
           Returns void
+      swapComponent: |-
+        ```
+        swapComponent(component): void
+        ```
+
+        * TODO
+
+          Parameters
+          + component: LibraryComponent
+
+          Returns void
+      switchVariant: |-
+        ```
+        switchVariant(pos, value): void
+        ```
+
+        * Switch a VariantComponent copy to the nearest one that has the specified property value
+
+          Parameters
+          + pos: number
+
+            The position of the poroperty to update
+          + value: string
+
+            The new value of the property
+
+          Returns void
+      combineAsVariants: |-
+        ```
+        combineAsVariants(ids): void
+        ```
+
+        * Combine several standard Components into a VariantComponent. Similar to doing it with the contextual menu
+          on the Penpot interface.
+          The current shape must be a component main instance.
+
+          Parameters
+          + ids: string[]
+
+            A list of ids of the main instances of the components to combine with this one.
+
+          Returns void
+      isVariantHead: |-
+        ```
+        isVariantHead(): boolean
+        ```
+
+        * Returns boolean
+
+          Returns true when the current shape is the head of a components tree nested structure,
+          and that component is a VariantComponent
       resize: |-
         ```
         resize(width, height): void
@@ -4787,6 +6180,38 @@ Ellipse:
           ```
           shape.rotate(45);
           ```
+      bringToFront: |-
+        ```
+        bringToFront(): void
+        ```
+
+        * Moves the current shape to the front of its siblings
+
+          Returns void
+      bringForward: |-
+        ```
+        bringForward(): void
+        ```
+
+        * Moves the current shape one position forward in its list of siblings
+
+          Returns void
+      sendToBack: |-
+        ```
+        sendToBack(): void
+        ```
+
+        * Moves the current shape to the back of its siblings
+
+          Returns void
+      sendBackward: |-
+        ```
+        sendBackward(): void
+        ```
+
+        * Moves the current shape one position backwards in its list of siblings
+
+          Returns void
       export: |-
         ```
         export(config): Promise<Uint8Array>
@@ -4956,7 +6381,7 @@ Export:
     }
     ```
 
-    Referenced by: Board, Boolean, Ellipse, Group, Image, Path, Rectangle, ShapeBase, SvgRaw, Text
+    Referenced by: Board, Boolean, Ellipse, Group, Image, Path, Rectangle, ShapeBase, SvgRaw, Text, VariantContainer
   members:
     Properties:
       type: |-
@@ -5298,7 +6723,7 @@ Fill:
     }
     ```
 
-    Referenced by: Board, Boolean, Ellipse, Group, Image, LibraryColor, Path, Rectangle, ShapeBase, SvgRaw, Text, TextRange
+    Referenced by: Board, Boolean, Ellipse, Group, Image, LibraryColor, Path, Rectangle, ShapeBase, SvgRaw, Text, TextRange, VariantContainer
   members:
     Properties:
       fillColor: |-
@@ -5401,7 +6826,7 @@ FlexLayout:
     * CommonLayout
       + FlexLayout
 
-    Referenced by: Board
+    Referenced by: Board, VariantContainer
   members:
     Properties:
       alignItems: |-
@@ -5976,7 +7401,7 @@ GridLayout:
     * CommonLayout
       + GridLayout
 
-    Referenced by: Board
+    Referenced by: Board, VariantContainer
   members:
     Properties:
       alignItems: |-
@@ -6379,6 +7804,7 @@ Group:
         id: string; 
         name: string; 
         parent: null | Shape; 
+        parentIndex: number; 
         x: number; 
         y: number; 
         width: number; 
@@ -6438,6 +7864,7 @@ Group:
         strokes: Stroke[]; 
         layoutChild?: LayoutChildProperties; 
         layoutCell?: LayoutChildProperties; 
+        setParentIndex(index: number): void; 
         isComponentInstance(): boolean; 
         isComponentMainInstance(): boolean; 
         isComponentCopyInstance(): boolean; 
@@ -6448,11 +7875,19 @@ Group:
         componentHead(): null | Shape; 
         component(): null | LibraryComponent; 
         detach(): void; 
+        swapComponent(component: LibraryComponent): void; 
+        switchVariant(pos: number, value: string): void; 
+        combineAsVariants(ids: string[]): void; 
+        isVariantHead(): boolean; 
         resize(width: number, height: number): void; 
         rotate(angle: number, center?: null | { 
             x: number; 
             y: number; 
         }): void; 
+        bringToFront(): void; 
+        bringForward(): void; 
+        sendToBack(): void; 
+        sendBackward(): void; 
         export(config: Export): Promise<Uint8Array>; 
         interactions: Interaction[]; 
         addInteraction(trigger: Trigger, action: Action, delay?: number): Interaction; 
@@ -6501,6 +7936,12 @@ Group:
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
+      parentIndex: |-
+        ```
+        parentIndex: number
+        ```
+
+        Returns the index of the current shape in the parent
       x: |-
         ```
         x: number
@@ -6925,6 +8366,22 @@ Group:
           ```
           const sharedKeys = shape.getSharedPluginDataKeys('exampleNamespace');console.log(sharedKeys);
           ```
+      setParentIndex: |-
+        ```
+        setParentIndex(index): void
+        ```
+
+        * Changes the index inside the parent of the current shape.
+          This method will shift the indexes of the shapes around that position to
+          match the index.
+          If the index is greater than the number of elements it will positioned last.
+
+          Parameters
+          + index: number
+
+            the new index for the shape to be in
+
+          Returns void
       isComponentInstance: |-
         ```
         isComponentInstance(): boolean
@@ -7010,6 +8467,57 @@ Group:
           shape as a "basic shape"
 
           Returns void
+      swapComponent: |-
+        ```
+        swapComponent(component): void
+        ```
+
+        * TODO
+
+          Parameters
+          + component: LibraryComponent
+
+          Returns void
+      switchVariant: |-
+        ```
+        switchVariant(pos, value): void
+        ```
+
+        * Switch a VariantComponent copy to the nearest one that has the specified property value
+
+          Parameters
+          + pos: number
+
+            The position of the poroperty to update
+          + value: string
+
+            The new value of the property
+
+          Returns void
+      combineAsVariants: |-
+        ```
+        combineAsVariants(ids): void
+        ```
+
+        * Combine several standard Components into a VariantComponent. Similar to doing it with the contextual menu
+          on the Penpot interface.
+          The current shape must be a component main instance.
+
+          Parameters
+          + ids: string[]
+
+            A list of ids of the main instances of the components to combine with this one.
+
+          Returns void
+      isVariantHead: |-
+        ```
+        isVariantHead(): boolean
+        ```
+
+        * Returns boolean
+
+          Returns true when the current shape is the head of a components tree nested structure,
+          and that component is a VariantComponent
       resize: |-
         ```
         resize(width, height): void
@@ -7055,6 +8563,38 @@ Group:
           ```
           shape.rotate(45);
           ```
+      bringToFront: |-
+        ```
+        bringToFront(): void
+        ```
+
+        * Moves the current shape to the front of its siblings
+
+          Returns void
+      bringForward: |-
+        ```
+        bringForward(): void
+        ```
+
+        * Moves the current shape one position forward in its list of siblings
+
+          Returns void
+      sendToBack: |-
+        ```
+        sendToBack(): void
+        ```
+
+        * Moves the current shape to the back of its siblings
+
+          Returns void
+      sendBackward: |-
+        ```
+        sendBackward(): void
+        ```
+
+        * Moves the current shape one position backwards in its list of siblings
+
+          Returns void
       export: |-
         ```
         export(config): Promise<Uint8Array>
@@ -7423,6 +8963,7 @@ Image:
         id: string; 
         name: string; 
         parent: null | Shape; 
+        parentIndex: number; 
         x: number; 
         y: number; 
         width: number; 
@@ -7481,6 +9022,7 @@ Image:
         strokes: Stroke[]; 
         layoutChild?: LayoutChildProperties; 
         layoutCell?: LayoutChildProperties; 
+        setParentIndex(index: number): void; 
         isComponentInstance(): boolean; 
         isComponentMainInstance(): boolean; 
         isComponentCopyInstance(): boolean; 
@@ -7491,11 +9033,19 @@ Image:
         componentHead(): null | Shape; 
         component(): null | LibraryComponent; 
         detach(): void; 
+        swapComponent(component: LibraryComponent): void; 
+        switchVariant(pos: number, value: string): void; 
+        combineAsVariants(ids: string[]): void; 
+        isVariantHead(): boolean; 
         resize(width: number, height: number): void; 
         rotate(angle: number, center?: null | { 
             x: number; 
             y: number; 
         }): void; 
+        bringToFront(): void; 
+        bringForward(): void; 
+        sendToBack(): void; 
+        sendBackward(): void; 
         export(config: Export): Promise<Uint8Array>; 
         interactions: Interaction[]; 
         addInteraction(trigger: Trigger, action: Action, delay?: number): Interaction; 
@@ -7544,6 +9094,12 @@ Image:
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
+      parentIndex: |-
+        ```
+        parentIndex: number
+        ```
+
+        Returns the index of the current shape in the parent
       x: |-
         ```
         x: number
@@ -7898,6 +9454,22 @@ Image:
           ```
           const sharedKeys = shape.getSharedPluginDataKeys('exampleNamespace');console.log(sharedKeys);
           ```
+      setParentIndex: |-
+        ```
+        setParentIndex(index): void
+        ```
+
+        * Changes the index inside the parent of the current shape.
+          This method will shift the indexes of the shapes around that position to
+          match the index.
+          If the index is greater than the number of elements it will positioned last.
+
+          Parameters
+          + index: number
+
+            the new index for the shape to be in
+
+          Returns void
       isComponentInstance: |-
         ```
         isComponentInstance(): boolean
@@ -7983,6 +9555,57 @@ Image:
           shape as a "basic shape"
 
           Returns void
+      swapComponent: |-
+        ```
+        swapComponent(component): void
+        ```
+
+        * TODO
+
+          Parameters
+          + component: LibraryComponent
+
+          Returns void
+      switchVariant: |-
+        ```
+        switchVariant(pos, value): void
+        ```
+
+        * Switch a VariantComponent copy to the nearest one that has the specified property value
+
+          Parameters
+          + pos: number
+
+            The position of the poroperty to update
+          + value: string
+
+            The new value of the property
+
+          Returns void
+      combineAsVariants: |-
+        ```
+        combineAsVariants(ids): void
+        ```
+
+        * Combine several standard Components into a VariantComponent. Similar to doing it with the contextual menu
+          on the Penpot interface.
+          The current shape must be a component main instance.
+
+          Parameters
+          + ids: string[]
+
+            A list of ids of the main instances of the components to combine with this one.
+
+          Returns void
+      isVariantHead: |-
+        ```
+        isVariantHead(): boolean
+        ```
+
+        * Returns boolean
+
+          Returns true when the current shape is the head of a components tree nested structure,
+          and that component is a VariantComponent
       resize: |-
         ```
         resize(width, height): void
@@ -8028,6 +9651,38 @@ Image:
           ```
           shape.rotate(45);
           ```
+      bringToFront: |-
+        ```
+        bringToFront(): void
+        ```
+
+        * Moves the current shape to the front of its siblings
+
+          Returns void
+      bringForward: |-
+        ```
+        bringForward(): void
+        ```
+
+        * Moves the current shape one position forward in its list of siblings
+
+          Returns void
+      sendToBack: |-
+        ```
+        sendToBack(): void
+        ```
+
+        * Moves the current shape to the back of its siblings
+
+          Returns void
+      sendBackward: |-
+        ```
+        sendBackward(): void
+        ```
+
+        * Moves the current shape one position backwards in its list of siblings
+
+          Returns void
       export: |-
         ```
         export(config): Promise<Uint8Array>
@@ -8121,7 +9776,7 @@ Interaction:
     }
     ```
 
-    Referenced by: Board, Boolean, Ellipse, Group, Image, Path, Rectangle, ShapeBase, SvgRaw, Text
+    Referenced by: Board, Boolean, Ellipse, Group, Image, Path, Rectangle, ShapeBase, SvgRaw, Text, VariantContainer
   members:
     Properties:
       shape: |-
@@ -8250,7 +9905,7 @@ LayoutChildProperties:
     }
     ```
 
-    Referenced by: Board, Boolean, Ellipse, Group, Image, Path, Rectangle, ShapeBase, SvgRaw, Text
+    Referenced by: Board, Boolean, Ellipse, Group, Image, Path, Rectangle, ShapeBase, SvgRaw, Text, VariantContainer
   members:
     Properties:
       absolute: |-
@@ -8873,6 +10528,8 @@ LibraryComponent:
     interface LibraryComponent { 
         instance(): Shape; 
         mainInstance(): Shape; 
+        isVariant(): boolean; 
+        transformInVariant(): void; 
         id: string; 
         libraryId: string; 
         name: string; 
@@ -8890,8 +10547,9 @@ LibraryComponent:
 
     * LibraryElement
       + LibraryComponent
+        - LibraryVariantComponent
 
-    Referenced by: Board, Boolean, Ellipse, Group, Image, Library, Path, Rectangle, ShapeBase, SvgRaw, Text
+    Referenced by: Board, Boolean, ContextTypesUtils, Ellipse, Group, Image, Library, Path, Rectangle, ShapeBase, SvgRaw, Text, VariantContainer, Variants
   members:
     Properties:
       id: |-
@@ -8942,6 +10600,296 @@ LibraryComponent:
         * Returns Shape
 
           Returns the reference to the main component shape.
+      isVariant: |-
+        ```
+        isVariant(): boolean
+        ```
+
+        * Returns boolean
+
+          true when this component is a VariantComponent
+      transformInVariant: |-
+        ```
+        transformInVariant(): void
+        ```
+
+        * Creates a new Variant from this standard Component. It creates a VariantContainer, transform this Component into a VariantComponent, duplicates it, and creates a
+          set of properties based on the component name and path.
+          Similar to doing it with the contextual menu or the shortcut on the Penpot interface
+
+          Returns void
+      getPluginData: |-
+        ```
+        getPluginData(key): string
+        ```
+
+        * Retrieves the data for our own plugin, given a specific key.
+
+          Parameters
+          + key: string
+
+            The key for which to retrieve the data.
+
+          Returns string
+
+          Returns the data associated with the key as a string.
+
+          Example
+          ```
+          const data = shape.getPluginData('exampleKey');console.log(data);
+          ```
+      setPluginData: |-
+        ```
+        setPluginData(key, value): void
+        ```
+
+        * Sets the plugin-specific data for the given key.
+
+          Parameters
+          + key: string
+
+            The key for which to set the data.
+          + value: string
+
+            The data to set for the key.
+
+          Returns void
+
+          Example
+          ```
+          shape.setPluginData('exampleKey', 'exampleValue');
+          ```
+      getPluginDataKeys: |-
+        ```
+        getPluginDataKeys(): string[]
+        ```
+
+        * Retrieves all the keys for the plugin-specific data.
+
+          Returns string[]
+
+          Returns an array of strings representing all the keys.
+
+          Example
+          ```
+          const keys = shape.getPluginDataKeys();console.log(keys);
+          ```
+      getSharedPluginData: |-
+        ```
+        getSharedPluginData(namespace, key): string
+        ```
+
+        * If we know the namespace of an external plugin, this is the way to get their data.
+
+          Parameters
+          + namespace: string
+
+            The namespace for the shared data.
+          + key: string
+
+            The key for which to retrieve the data.
+
+          Returns string
+
+          Returns the shared data associated with the key as a string.
+
+          Example
+          ```
+          const sharedData = shape.getSharedPluginData('exampleNamespace', 'exampleKey');console.log(sharedData);
+          ```
+      setSharedPluginData: |-
+        ```
+        setSharedPluginData(namespace, key, value): void
+        ```
+
+        * Sets the shared plugin-specific data for the given namespace and key.
+
+          Parameters
+          + namespace: string
+
+            The namespace for the shared data.
+          + key: string
+
+            The key for which to set the data.
+          + value: string
+
+            The data to set for the key.
+
+          Returns void
+
+          Example
+          ```
+          shape.setSharedPluginData('exampleNamespace', 'exampleKey', 'exampleValue');
+          ```
+      getSharedPluginDataKeys: |-
+        ```
+        getSharedPluginDataKeys(namespace): string[]
+        ```
+
+        * Retrieves all the keys for the shared plugin-specific data in the given namespace.
+
+          Parameters
+          + namespace: string
+
+            The namespace for the shared data.
+
+          Returns string[]
+
+          Returns an array of strings representing all the keys in the namespace.
+
+          Example
+          ```
+          const sharedKeys = shape.getSharedPluginDataKeys('exampleNamespace');console.log(sharedKeys);
+          ```
+LibraryVariantComponent:
+  overview: |-
+    Interface LibraryVariantComponent
+    =================================
+
+    Represents a component element from a library in Penpot.
+    This interface extends `LibraryElement` and includes properties specific to component elements.
+
+    ```
+    interface LibraryVariantComponent { 
+        instance(): Shape; 
+        mainInstance(): Shape; 
+        isVariant(): boolean; 
+        transformInVariant(): void; 
+        variants: null | Variants; 
+        variantProps: { 
+            [property: string]: string; 
+        }; 
+        variantError: string; 
+        addVariant(): void; 
+        setVariantProperty(pos: number, value: string): void; 
+        id: string; 
+        libraryId: string; 
+        name: string; 
+        path: string; 
+        getPluginData(key: string): string; 
+        setPluginData(key: string, value: string): void; 
+        getPluginDataKeys(): string[]; 
+        getSharedPluginData(namespace: string, key: string): string; 
+        setSharedPluginData(namespace: string, key: string, value: string): void; 
+        getSharedPluginDataKeys(namespace: string): string[]; 
+    }
+    ```
+
+    Hierarchy (view full)
+
+    * LibraryComponent
+      + LibraryVariantComponent
+
+    Referenced by: ContextTypesUtils
+  members:
+    Properties:
+      variants: |-
+        ```
+        variants: null | Variants
+        ```
+
+        Access to the Variant interface, for attributes and actions over the full Variant (not only this VariantComponent)
+      variantProps: |-
+        ```
+        variantProps: { 
+            [property: string]: string; 
+        }
+        ```
+
+        A list of the variants props of this VariantComponent. Each property have a key and a value
+      variantError: |-
+        ```
+        variantError: string
+        ```
+
+        If this VariantComponent has an invalid name, that does't follow the structure [property]=[value], [property]=[value]
+        this field stores that invalid name
+      id: |-
+        ```
+        id: string
+        ```
+
+        The unique identifier of the library element.
+      libraryId: |-
+        ```
+        libraryId: string
+        ```
+
+        The unique identifier of the library to which the element belongs.
+      name: |-
+        ```
+        name: string
+        ```
+
+        The name of the library element.
+      path: |-
+        ```
+        path: string
+        ```
+
+        The path of the library element.
+    Methods:
+      instance: |-
+        ```
+        instance(): Shape
+        ```
+
+        * Creates an instance of the component.
+
+          Returns Shape
+
+          Returns a `Shape` object representing the instance of the component.
+
+          Example
+          ```
+          const componentInstance = libraryComponent.instance();
+          ```
+      mainInstance: |-
+        ```
+        mainInstance(): Shape
+        ```
+
+        * Returns Shape
+
+          Returns the reference to the main component shape.
+      isVariant: |-
+        ```
+        isVariant(): boolean
+        ```
+
+        * Returns boolean
+
+          true when this component is a VariantComponent
+      transformInVariant: |-
+        ```
+        transformInVariant(): void
+        ```
+
+        * Creates a new Variant from this standard Component. It creates a VariantContainer, transform this Component into a VariantComponent, duplicates it, and creates a
+          set of properties based on the component name and path.
+          Similar to doing it with the contextual menu or the shortcut on the Penpot interface
+
+          Returns void
+      addVariant: |-
+        ```
+        addVariant(): void
+        ```
+
+        * Creates a duplicate of the current VariantComponent on its Variant
+
+          Returns void
+      setVariantProperty: |-
+        ```
+        setVariantProperty(pos, value): void
+        ```
+
+        * Sets the value of the variant property on the indicated position
+
+          Parameters
+          + pos: number
+          + value: string
+
+          Returns void
       getPluginData: |-
         ```
         getPluginData(key): string
@@ -10305,7 +12253,9 @@ Path:
     interface Path { 
         type: "path"; 
         toD(): string; 
-        content: PathCommand[]; 
+        content: string; 
+        d: string; 
+        commands: PathCommand[]; 
         fills: Fill[]; 
         getPluginData(key: string): string; 
         setPluginData(key: string, value: string): void; 
@@ -10316,6 +12266,7 @@ Path:
         id: string; 
         name: string; 
         parent: null | Shape; 
+        parentIndex: number; 
         x: number; 
         y: number; 
         width: number; 
@@ -10374,6 +12325,7 @@ Path:
         strokes: Stroke[]; 
         layoutChild?: LayoutChildProperties; 
         layoutCell?: LayoutChildProperties; 
+        setParentIndex(index: number): void; 
         isComponentInstance(): boolean; 
         isComponentMainInstance(): boolean; 
         isComponentCopyInstance(): boolean; 
@@ -10384,11 +12336,19 @@ Path:
         componentHead(): null | Shape; 
         component(): null | LibraryComponent; 
         detach(): void; 
+        swapComponent(component: LibraryComponent): void; 
+        switchVariant(pos: number, value: string): void; 
+        combineAsVariants(ids: string[]): void; 
+        isVariantHead(): boolean; 
         resize(width: number, height: number): void; 
         rotate(angle: number, center?: null | { 
             x: number; 
             y: number; 
         }): void; 
+        bringToFront(): void; 
+        bringForward(): void; 
+        sendToBack(): void; 
+        sendBackward(): void; 
         export(config: Export): Promise<Uint8Array>; 
         interactions: Interaction[]; 
         addInteraction(trigger: Trigger, action: Action, delay?: number): Interaction; 
@@ -10414,10 +12374,26 @@ Path:
         The type of the shape, which is always 'path' for path shapes.
       content: |-
         ```
-        content: PathCommand[]
+        content: string
         ```
 
-        The content of the path shape, defined as an array of path commands.
+        The content of the boolean shape, defined as the path string.
+
+        Deprecated
+
+        Use either `d` or `commands`.
+      d: |-
+        ```
+        d: string
+        ```
+
+        The content of the boolean shape, defined as the path string.
+      commands: |-
+        ```
+        commands: PathCommand[]
+        ```
+
+        The content of the boolean shape, defined as an array of path commands.
       fills: |-
         ```
         fills: Fill[]
@@ -10445,6 +12421,12 @@ Path:
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
+      parentIndex: |-
+        ```
+        parentIndex: number
+        ```
+
+        Returns the index of the current shape in the parent
       x: |-
         ```
         x: number
@@ -10686,6 +12668,10 @@ Path:
           Returns string
 
           Returns the path data (d attribute) as a string.
+
+          Deprecated
+
+          Use the `d` attribute
       getPluginData: |-
         ```
         getPluginData(key): string
@@ -10809,6 +12795,22 @@ Path:
           ```
           const sharedKeys = shape.getSharedPluginDataKeys('exampleNamespace');console.log(sharedKeys);
           ```
+      setParentIndex: |-
+        ```
+        setParentIndex(index): void
+        ```
+
+        * Changes the index inside the parent of the current shape.
+          This method will shift the indexes of the shapes around that position to
+          match the index.
+          If the index is greater than the number of elements it will positioned last.
+
+          Parameters
+          + index: number
+
+            the new index for the shape to be in
+
+          Returns void
       isComponentInstance: |-
         ```
         isComponentInstance(): boolean
@@ -10894,6 +12896,57 @@ Path:
           shape as a "basic shape"
 
           Returns void
+      swapComponent: |-
+        ```
+        swapComponent(component): void
+        ```
+
+        * TODO
+
+          Parameters
+          + component: LibraryComponent
+
+          Returns void
+      switchVariant: |-
+        ```
+        switchVariant(pos, value): void
+        ```
+
+        * Switch a VariantComponent copy to the nearest one that has the specified property value
+
+          Parameters
+          + pos: number
+
+            The position of the poroperty to update
+          + value: string
+
+            The new value of the property
+
+          Returns void
+      combineAsVariants: |-
+        ```
+        combineAsVariants(ids): void
+        ```
+
+        * Combine several standard Components into a VariantComponent. Similar to doing it with the contextual menu
+          on the Penpot interface.
+          The current shape must be a component main instance.
+
+          Parameters
+          + ids: string[]
+
+            A list of ids of the main instances of the components to combine with this one.
+
+          Returns void
+      isVariantHead: |-
+        ```
+        isVariantHead(): boolean
+        ```
+
+        * Returns boolean
+
+          Returns true when the current shape is the head of a components tree nested structure,
+          and that component is a VariantComponent
       resize: |-
         ```
         resize(width, height): void
@@ -10939,6 +12992,38 @@ Path:
           ```
           shape.rotate(45);
           ```
+      bringToFront: |-
+        ```
+        bringToFront(): void
+        ```
+
+        * Moves the current shape to the front of its siblings
+
+          Returns void
+      bringForward: |-
+        ```
+        bringForward(): void
+        ```
+
+        * Moves the current shape one position forward in its list of siblings
+
+          Returns void
+      sendToBack: |-
+        ```
+        sendToBack(): void
+        ```
+
+        * Moves the current shape to the back of its siblings
+
+          Returns void
+      sendBackward: |-
+        ```
+        sendBackward(): void
+        ```
+
+        * Moves the current shape one position backwards in its list of siblings
+
+          Returns void
       export: |-
         ```
         export(config): Promise<Uint8Array>
@@ -11418,6 +13503,7 @@ Rectangle:
         id: string; 
         name: string; 
         parent: null | Shape; 
+        parentIndex: number; 
         x: number; 
         y: number; 
         width: number; 
@@ -11476,6 +13562,7 @@ Rectangle:
         strokes: Stroke[]; 
         layoutChild?: LayoutChildProperties; 
         layoutCell?: LayoutChildProperties; 
+        setParentIndex(index: number): void; 
         isComponentInstance(): boolean; 
         isComponentMainInstance(): boolean; 
         isComponentCopyInstance(): boolean; 
@@ -11486,11 +13573,19 @@ Rectangle:
         componentHead(): null | Shape; 
         component(): null | LibraryComponent; 
         detach(): void; 
+        swapComponent(component: LibraryComponent): void; 
+        switchVariant(pos: number, value: string): void; 
+        combineAsVariants(ids: string[]): void; 
+        isVariantHead(): boolean; 
         resize(width: number, height: number): void; 
         rotate(angle: number, center?: null | { 
             x: number; 
             y: number; 
         }): void; 
+        bringToFront(): void; 
+        bringForward(): void; 
+        sendToBack(): void; 
+        sendBackward(): void; 
         export(config: Export): Promise<Uint8Array>; 
         interactions: Interaction[]; 
         addInteraction(trigger: Trigger, action: Action, delay?: number): Interaction; 
@@ -11541,6 +13636,12 @@ Rectangle:
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
+      parentIndex: |-
+        ```
+        parentIndex: number
+        ```
+
+        Returns the index of the current shape in the parent
       x: |-
         ```
         x: number
@@ -11895,6 +13996,22 @@ Rectangle:
           ```
           const sharedKeys = shape.getSharedPluginDataKeys('exampleNamespace');console.log(sharedKeys);
           ```
+      setParentIndex: |-
+        ```
+        setParentIndex(index): void
+        ```
+
+        * Changes the index inside the parent of the current shape.
+          This method will shift the indexes of the shapes around that position to
+          match the index.
+          If the index is greater than the number of elements it will positioned last.
+
+          Parameters
+          + index: number
+
+            the new index for the shape to be in
+
+          Returns void
       isComponentInstance: |-
         ```
         isComponentInstance(): boolean
@@ -11980,6 +14097,57 @@ Rectangle:
           shape as a "basic shape"
 
           Returns void
+      swapComponent: |-
+        ```
+        swapComponent(component): void
+        ```
+
+        * TODO
+
+          Parameters
+          + component: LibraryComponent
+
+          Returns void
+      switchVariant: |-
+        ```
+        switchVariant(pos, value): void
+        ```
+
+        * Switch a VariantComponent copy to the nearest one that has the specified property value
+
+          Parameters
+          + pos: number
+
+            The position of the poroperty to update
+          + value: string
+
+            The new value of the property
+
+          Returns void
+      combineAsVariants: |-
+        ```
+        combineAsVariants(ids): void
+        ```
+
+        * Combine several standard Components into a VariantComponent. Similar to doing it with the contextual menu
+          on the Penpot interface.
+          The current shape must be a component main instance.
+
+          Parameters
+          + ids: string[]
+
+            A list of ids of the main instances of the components to combine with this one.
+
+          Returns void
+      isVariantHead: |-
+        ```
+        isVariantHead(): boolean
+        ```
+
+        * Returns boolean
+
+          Returns true when the current shape is the head of a components tree nested structure,
+          and that component is a VariantComponent
       resize: |-
         ```
         resize(width, height): void
@@ -12025,6 +14193,38 @@ Rectangle:
           ```
           shape.rotate(45);
           ```
+      bringToFront: |-
+        ```
+        bringToFront(): void
+        ```
+
+        * Moves the current shape to the front of its siblings
+
+          Returns void
+      bringForward: |-
+        ```
+        bringForward(): void
+        ```
+
+        * Moves the current shape one position forward in its list of siblings
+
+          Returns void
+      sendToBack: |-
+        ```
+        sendToBack(): void
+        ```
+
+        * Moves the current shape to the back of its siblings
+
+          Returns void
+      sendBackward: |-
+        ```
+        sendBackward(): void
+        ```
+
+        * Moves the current shape one position backwards in its list of siblings
+
+          Returns void
       export: |-
         ```
         export(config): Promise<Uint8Array>
@@ -12117,7 +14317,7 @@ RulerGuide:
     }
     ```
 
-    Referenced by: Board, Page
+    Referenced by: Board, Page, VariantContainer
   members:
     Properties:
       orientation: |-
@@ -12160,7 +14360,7 @@ Shadow:
     }
     ```
 
-    Referenced by: Board, Boolean, Ellipse, Group, Image, Path, Rectangle, ShapeBase, SvgRaw, Text
+    Referenced by: Board, Boolean, Ellipse, Group, Image, Path, Rectangle, ShapeBase, SvgRaw, Text, VariantContainer
   members:
     Properties:
       id: |-
@@ -12234,6 +14434,7 @@ ShapeBase:
         id: string; 
         name: string; 
         parent: null | Shape; 
+        parentIndex: number; 
         x: number; 
         y: number; 
         width: number; 
@@ -12293,6 +14494,7 @@ ShapeBase:
         strokes: Stroke[]; 
         layoutChild?: LayoutChildProperties; 
         layoutCell?: LayoutChildProperties; 
+        setParentIndex(index: number): void; 
         isComponentInstance(): boolean; 
         isComponentMainInstance(): boolean; 
         isComponentCopyInstance(): boolean; 
@@ -12303,11 +14505,19 @@ ShapeBase:
         componentHead(): null | Shape; 
         component(): null | LibraryComponent; 
         detach(): void; 
+        swapComponent(component: LibraryComponent): void; 
+        switchVariant(pos: number, value: string): void; 
+        combineAsVariants(ids: string[]): void; 
+        isVariantHead(): boolean; 
         resize(width: number, height: number): void; 
         rotate(angle: number, center?: null | { 
             x: number; 
             y: number; 
         }): void; 
+        bringToFront(): void; 
+        bringForward(): void; 
+        sendToBack(): void; 
+        sendBackward(): void; 
         export(config: Export): Promise<Uint8Array>; 
         interactions: Interaction[]; 
         addInteraction(trigger: Trigger, action: Action, delay?: number): Interaction; 
@@ -12351,6 +14561,12 @@ ShapeBase:
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
+      parentIndex: |-
+        ```
+        parentIndex: number
+        ```
+
+        Returns the index of the current shape in the parent
       x: |-
         ```
         x: number
@@ -12711,6 +14927,22 @@ ShapeBase:
           ```
           const sharedKeys = shape.getSharedPluginDataKeys('exampleNamespace');console.log(sharedKeys);
           ```
+      setParentIndex: |-
+        ```
+        setParentIndex(index): void
+        ```
+
+        * Changes the index inside the parent of the current shape.
+          This method will shift the indexes of the shapes around that position to
+          match the index.
+          If the index is greater than the number of elements it will positioned last.
+
+          Parameters
+          + index: number
+
+            the new index for the shape to be in
+
+          Returns void
       isComponentInstance: |-
         ```
         isComponentInstance(): boolean
@@ -12796,6 +15028,57 @@ ShapeBase:
           shape as a "basic shape"
 
           Returns void
+      swapComponent: |-
+        ```
+        swapComponent(component): void
+        ```
+
+        * TODO
+
+          Parameters
+          + component: LibraryComponent
+
+          Returns void
+      switchVariant: |-
+        ```
+        switchVariant(pos, value): void
+        ```
+
+        * Switch a VariantComponent copy to the nearest one that has the specified property value
+
+          Parameters
+          + pos: number
+
+            The position of the poroperty to update
+          + value: string
+
+            The new value of the property
+
+          Returns void
+      combineAsVariants: |-
+        ```
+        combineAsVariants(ids): void
+        ```
+
+        * Combine several standard Components into a VariantComponent. Similar to doing it with the contextual menu
+          on the Penpot interface.
+          The current shape must be a component main instance.
+
+          Parameters
+          + ids: string[]
+
+            A list of ids of the main instances of the components to combine with this one.
+
+          Returns void
+      isVariantHead: |-
+        ```
+        isVariantHead(): boolean
+        ```
+
+        * Returns boolean
+
+          Returns true when the current shape is the head of a components tree nested structure,
+          and that component is a VariantComponent
       resize: |-
         ```
         resize(width, height): void
@@ -12841,6 +15124,38 @@ ShapeBase:
           ```
           shape.rotate(45);
           ```
+      bringToFront: |-
+        ```
+        bringToFront(): void
+        ```
+
+        * Moves the current shape to the front of its siblings
+
+          Returns void
+      bringForward: |-
+        ```
+        bringForward(): void
+        ```
+
+        * Moves the current shape one position forward in its list of siblings
+
+          Returns void
+      sendToBack: |-
+        ```
+        sendToBack(): void
+        ```
+
+        * Moves the current shape to the back of its siblings
+
+          Returns void
+      sendBackward: |-
+        ```
+        sendBackward(): void
+        ```
+
+        * Moves the current shape one position backwards in its list of siblings
+
+          Returns void
       export: |-
         ```
         export(config): Promise<Uint8Array>
@@ -13022,7 +15337,7 @@ Stroke:
     }
     ```
 
-    Referenced by: Board, Boolean, Ellipse, Group, Image, LibraryColor, Path, Rectangle, ShapeBase, SvgRaw, Text
+    Referenced by: Board, Boolean, Ellipse, Group, Image, LibraryColor, Path, Rectangle, ShapeBase, SvgRaw, Text, VariantContainer
   members:
     Properties:
       strokeColor: |-
@@ -13111,6 +15426,7 @@ SvgRaw:
         id: string; 
         name: string; 
         parent: null | Shape; 
+        parentIndex: number; 
         x: number; 
         y: number; 
         width: number; 
@@ -13170,6 +15486,7 @@ SvgRaw:
         strokes: Stroke[]; 
         layoutChild?: LayoutChildProperties; 
         layoutCell?: LayoutChildProperties; 
+        setParentIndex(index: number): void; 
         isComponentInstance(): boolean; 
         isComponentMainInstance(): boolean; 
         isComponentCopyInstance(): boolean; 
@@ -13180,11 +15497,19 @@ SvgRaw:
         componentHead(): null | Shape; 
         component(): null | LibraryComponent; 
         detach(): void; 
+        swapComponent(component: LibraryComponent): void; 
+        switchVariant(pos: number, value: string): void; 
+        combineAsVariants(ids: string[]): void; 
+        isVariantHead(): boolean; 
         resize(width: number, height: number): void; 
         rotate(angle: number, center?: null | { 
             x: number; 
             y: number; 
         }): void; 
+        bringToFront(): void; 
+        bringForward(): void; 
+        sendToBack(): void; 
+        sendBackward(): void; 
         export(config: Export): Promise<Uint8Array>; 
         interactions: Interaction[]; 
         addInteraction(trigger: Trigger, action: Action, delay?: number): Interaction; 
@@ -13222,6 +15547,12 @@ SvgRaw:
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
+      parentIndex: |-
+        ```
+        parentIndex: number
+        ```
+
+        Returns the index of the current shape in the parent
       x: |-
         ```
         x: number
@@ -13586,6 +15917,22 @@ SvgRaw:
           ```
           const sharedKeys = shape.getSharedPluginDataKeys('exampleNamespace');console.log(sharedKeys);
           ```
+      setParentIndex: |-
+        ```
+        setParentIndex(index): void
+        ```
+
+        * Changes the index inside the parent of the current shape.
+          This method will shift the indexes of the shapes around that position to
+          match the index.
+          If the index is greater than the number of elements it will positioned last.
+
+          Parameters
+          + index: number
+
+            the new index for the shape to be in
+
+          Returns void
       isComponentInstance: |-
         ```
         isComponentInstance(): boolean
@@ -13671,6 +16018,57 @@ SvgRaw:
           shape as a "basic shape"
 
           Returns void
+      swapComponent: |-
+        ```
+        swapComponent(component): void
+        ```
+
+        * TODO
+
+          Parameters
+          + component: LibraryComponent
+
+          Returns void
+      switchVariant: |-
+        ```
+        switchVariant(pos, value): void
+        ```
+
+        * Switch a VariantComponent copy to the nearest one that has the specified property value
+
+          Parameters
+          + pos: number
+
+            The position of the poroperty to update
+          + value: string
+
+            The new value of the property
+
+          Returns void
+      combineAsVariants: |-
+        ```
+        combineAsVariants(ids): void
+        ```
+
+        * Combine several standard Components into a VariantComponent. Similar to doing it with the contextual menu
+          on the Penpot interface.
+          The current shape must be a component main instance.
+
+          Parameters
+          + ids: string[]
+
+            A list of ids of the main instances of the components to combine with this one.
+
+          Returns void
+      isVariantHead: |-
+        ```
+        isVariantHead(): boolean
+        ```
+
+        * Returns boolean
+
+          Returns true when the current shape is the head of a components tree nested structure,
+          and that component is a VariantComponent
       resize: |-
         ```
         resize(width, height): void
@@ -13716,6 +16114,38 @@ SvgRaw:
           ```
           shape.rotate(45);
           ```
+      bringToFront: |-
+        ```
+        bringToFront(): void
+        ```
+
+        * Moves the current shape to the front of its siblings
+
+          Returns void
+      bringForward: |-
+        ```
+        bringForward(): void
+        ```
+
+        * Moves the current shape one position forward in its list of siblings
+
+          Returns void
+      sendToBack: |-
+        ```
+        sendToBack(): void
+        ```
+
+        * Moves the current shape to the back of its siblings
+
+          Returns void
+      sendBackward: |-
+        ```
+        sendBackward(): void
+        ```
+
+        * Moves the current shape one position backwards in its list of siblings
+
+          Returns void
       export: |-
         ```
         export(config): Promise<Uint8Array>
@@ -13811,6 +16241,7 @@ Text:
         id: string; 
         name: string; 
         parent: null | Shape; 
+        parentIndex: number; 
         x: number; 
         y: number; 
         width: number; 
@@ -13870,6 +16301,7 @@ Text:
         strokes: Stroke[]; 
         layoutChild?: LayoutChildProperties; 
         layoutCell?: LayoutChildProperties; 
+        setParentIndex(index: number): void; 
         isComponentInstance(): boolean; 
         isComponentMainInstance(): boolean; 
         isComponentCopyInstance(): boolean; 
@@ -13880,11 +16312,19 @@ Text:
         componentHead(): null | Shape; 
         component(): null | LibraryComponent; 
         detach(): void; 
+        swapComponent(component: LibraryComponent): void; 
+        switchVariant(pos: number, value: string): void; 
+        combineAsVariants(ids: string[]): void; 
+        isVariantHead(): boolean; 
         resize(width: number, height: number): void; 
         rotate(angle: number, center?: null | { 
             x: number; 
             y: number; 
         }): void; 
+        bringToFront(): void; 
+        bringForward(): void; 
+        sendToBack(): void; 
+        sendBackward(): void; 
         export(config: Export): Promise<Uint8Array>; 
         interactions: Interaction[]; 
         addInteraction(trigger: Trigger, action: Action, delay?: number): Interaction; 
@@ -13966,6 +16406,12 @@ Text:
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
+      parentIndex: |-
+        ```
+        parentIndex: number
+        ```
+
+        Returns the index of the current shape in the parent
       x: |-
         ```
         x: number
@@ -14454,6 +16900,22 @@ Text:
           ```
           const sharedKeys = shape.getSharedPluginDataKeys('exampleNamespace');console.log(sharedKeys);
           ```
+      setParentIndex: |-
+        ```
+        setParentIndex(index): void
+        ```
+
+        * Changes the index inside the parent of the current shape.
+          This method will shift the indexes of the shapes around that position to
+          match the index.
+          If the index is greater than the number of elements it will positioned last.
+
+          Parameters
+          + index: number
+
+            the new index for the shape to be in
+
+          Returns void
       isComponentInstance: |-
         ```
         isComponentInstance(): boolean
@@ -14539,6 +17001,57 @@ Text:
           shape as a "basic shape"
 
           Returns void
+      swapComponent: |-
+        ```
+        swapComponent(component): void
+        ```
+
+        * TODO
+
+          Parameters
+          + component: LibraryComponent
+
+          Returns void
+      switchVariant: |-
+        ```
+        switchVariant(pos, value): void
+        ```
+
+        * Switch a VariantComponent copy to the nearest one that has the specified property value
+
+          Parameters
+          + pos: number
+
+            The position of the poroperty to update
+          + value: string
+
+            The new value of the property
+
+          Returns void
+      combineAsVariants: |-
+        ```
+        combineAsVariants(ids): void
+        ```
+
+        * Combine several standard Components into a VariantComponent. Similar to doing it with the contextual menu
+          on the Penpot interface.
+          The current shape must be a component main instance.
+
+          Parameters
+          + ids: string[]
+
+            A list of ids of the main instances of the components to combine with this one.
+
+          Returns void
+      isVariantHead: |-
+        ```
+        isVariantHead(): boolean
+        ```
+
+        * Returns boolean
+
+          Returns true when the current shape is the head of a components tree nested structure,
+          and that component is a VariantComponent
       resize: |-
         ```
         resize(width, height): void
@@ -14584,6 +17097,38 @@ Text:
           ```
           shape.rotate(45);
           ```
+      bringToFront: |-
+        ```
+        bringToFront(): void
+        ```
+
+        * Moves the current shape to the front of its siblings
+
+          Returns void
+      bringForward: |-
+        ```
+        bringForward(): void
+        ```
+
+        * Moves the current shape one position forward in its list of siblings
+
+          Returns void
+      sendToBack: |-
+        ```
+        sendToBack(): void
+        ```
+
+        * Moves the current shape to the back of its siblings
+
+          Returns void
+      sendBackward: |-
+        ```
+        sendBackward(): void
+        ```
+
+        * Moves the current shape one position backwards in its list of siblings
+
+          Returns void
       export: |-
         ```
         export(config): Promise<Uint8Array>
@@ -15123,6 +17668,116 @@ User:
         ```
         const sessionId = user.sessionId;console.log(sessionId);
         ```
+Variants:
+  overview: |-
+    Interface Variants
+    ==================
+
+    TODO
+
+    ```
+    interface Variants { 
+        id: string; 
+        libraryId: string; 
+        properties: string[]; 
+        currentValues(property: string): string[]; 
+        removeProperty(pos: number): void; 
+        renameProperty(pos: number, name: string): void; 
+        variantComponents(): LibraryComponent[]; 
+        addVariant(): void; 
+        addProperty(): void; 
+    }
+    ```
+
+    Referenced by: LibraryVariantComponent, VariantContainer
+  members:
+    Properties:
+      id: |-
+        ```
+        id: string
+        ```
+
+        The unique identifier of the variant element. It is the id of the VariantContainer, and all the VariantComponents
+        that belong to this variant have an attribute variantId which this is as value.
+      libraryId: |-
+        ```
+        libraryId: string
+        ```
+
+        The unique identifier of the library to which the variant belongs.
+      properties: |-
+        ```
+        properties: string[]
+        ```
+
+        A list with the names of the properties of the Variant
+    Methods:
+      currentValues: |-
+        ```
+        currentValues(property): string[]
+        ```
+
+        * A list of all the values of a property along all the variantComponents of this Variant
+
+          Parameters
+          + property: string
+
+            The name of the property
+
+          Returns string[]
+      removeProperty: |-
+        ```
+        removeProperty(pos): void
+        ```
+
+        * Remove a property of the Variant
+
+          Parameters
+          + pos: number
+
+            The position of the property to remove
+
+          Returns void
+      renameProperty: |-
+        ```
+        renameProperty(pos, name): void
+        ```
+
+        * Rename a property of the Variant
+
+          Parameters
+          + pos: number
+
+            The position of the property to rename
+          + name: string
+
+            The new name of the property
+
+          Returns void
+      variantComponents: |-
+        ```
+        variantComponents(): LibraryComponent[]
+        ```
+
+        * List all the VariantComponents on this Variant.
+
+          Returns LibraryComponent[]
+      addVariant: |-
+        ```
+        addVariant(): void
+        ```
+
+        * Creates a duplicate of the main VariantComponent of this Variant
+
+          Returns void
+      addProperty: |-
+        ```
+        addProperty(): void
+        ```
+
+        * Adds a new property to this Variant
+
+          Returns void
 Viewport:
   overview: |-
     Interface Viewport
@@ -15210,7 +17865,7 @@ Action:
 
     Type for all the possible types of actions in an interaction.
 
-    Referenced by: Board, Boolean, Ellipse, Group, Image, Interaction, Path, Rectangle, ShapeBase, SvgRaw, Text
+    Referenced by: Board, Boolean, Ellipse, Group, Image, Interaction, Path, Rectangle, ShapeBase, SvgRaw, Text, VariantContainer
   members: {}
 Animation:
   overview: |-
@@ -15280,7 +17935,7 @@ Bounds:
     const bounds = { x: 50, y: 50, width: 200, height: 100 };console.log(bounds);
     ```
 
-    Referenced by: Board, Boolean, Ellipse, Group, Image, Path, Rectangle, ShapeBase, SvgRaw, Text, Viewport
+    Referenced by: Board, Boolean, Ellipse, Group, Image, Path, Rectangle, ShapeBase, SvgRaw, Text, VariantContainer, Viewport
   members: {}
 Gradient:
   overview: |-
@@ -15352,7 +18007,7 @@ Guide:
     Represents a board guide in Penpot.
     This type can be one of several specific board guide types: column, row, or square.
 
-    Referenced by: Board
+    Referenced by: Board, VariantContainer
   members: {}
 ImageData:
   overview: |-
@@ -15367,6 +18022,7 @@ ImageData:
         mtype?: string; 
         id: string; 
         keepAspectRatio?: boolean; 
+        data(): Promise<Uint8Array>; 
     }
     ```
 
@@ -15394,6 +18050,15 @@ ImageData:
 
       Whether to keep the aspect ratio of the image when resizing.
       Defaults to false if omitted.
+    * data:function
+
+      ```
+      data(): Promise<Uint8Array>
+      ```
+
+      + Returns the imaged data as a byte array.
+
+        Returns Promise<Uint8Array>
 
     Referenced by: Color, Context, Fill, LibraryColor, Penpot
   members: {}
@@ -15486,7 +18151,7 @@ Point:
 
     Point represents a point in 2D space, typically with x and y coordinates.
 
-    Referenced by: Board, Boolean, CommentThread, Ellipse, Group, Image, OpenOverlay, OverlayAction, Page, Path, Rectangle, ShapeBase, SvgRaw, Text, ToggleOverlay, Viewport
+    Referenced by: Board, Boolean, CommentThread, Ellipse, Group, Image, OpenOverlay, OverlayAction, Page, Path, Rectangle, ShapeBase, SvgRaw, Text, ToggleOverlay, VariantContainer, Viewport
   members: {}
 RulerGuideOrientation:
   overview: |-
@@ -15497,7 +18162,7 @@ RulerGuideOrientation:
     RulerGuideOrientation: "horizontal" | "vertical"
     ```
 
-    Referenced by: Board, Page, RulerGuide
+    Referenced by: Board, Page, RulerGuide, VariantContainer
   members: {}
 Shape:
   overview: |-
@@ -15525,7 +18190,7 @@ Shape:
     let shape: Shape;if (penpot.utils.types.isRectangle(shape)) {  console.log(shape.type);}
     ```
 
-    Referenced by: Board, Boolean, Context, ContextGeometryUtils, ContextTypesUtils, Ellipse, EventsMap, FlexLayout, GridLayout, Group, Image, Interaction, Library, LibraryComponent, LibraryTypography, OpenOverlay, OverlayAction, Page, Path, Penpot, Rectangle, ShapeBase, SvgRaw, Text, ToggleOverlay, Viewport
+    Referenced by: Board, Boolean, Context, ContextGeometryUtils, ContextTypesUtils, Ellipse, EventsMap, FlexLayout, GridLayout, Group, Image, Interaction, Library, LibraryComponent, LibraryTypography, LibraryVariantComponent, OpenOverlay, OverlayAction, Page, Path, Penpot, Rectangle, ShapeBase, SvgRaw, Text, ToggleOverlay, VariantContainer, Viewport
   members: {}
 StrokeCap:
   overview: |-
@@ -15599,5 +18264,5 @@ Trigger:
     * `mouse-leave` triggers when the user moves the mouse outside the shape.
     * `after-delay` triggers after the `delay` time has passed even if no interaction from the user happens.
 
-    Referenced by: Board, Boolean, Ellipse, Group, Image, Interaction, Path, Rectangle, ShapeBase, SvgRaw, Text
+    Referenced by: Board, Boolean, Ellipse, Group, Image, Interaction, Path, Rectangle, ShapeBase, SvgRaw, Text, VariantContainer
   members: {}

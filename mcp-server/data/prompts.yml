@@ -29,9 +29,11 @@ initial_instructions: |
     * When a shape is a child of a parent shape, the property `parent` refers to the parent shape, and the read-only properties 
       `parentX` and `parentY` (as well as `boardX` and `boardY`) provide the position of the shape relative to its parent (containing board).
       To position a shape within its parent, set the absolute `x` and `y` properties accordingly.
-    * The z-order of shapes is, by default, determined by the order in the `children` array of the parent shape.
+    * The z-order of shapes is determined by the order in the `children` array of the parent shape.
       Therefore, when creating shapes that should be on top of each other, add them to the parent in the correct order
       (i.e. add background shapes first, then foreground shapes later).
+      To modify z-order after creation, use the following methods on shapes:  `bringToFront()`, `sendToBack()`, `bringForward()`, `sendBackward()`,
+      and, for precise control, `setParentIndex(index)` (0-based).
 
   # Executing Code
 

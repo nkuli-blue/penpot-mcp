@@ -1,4 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { AsyncLocalStorage } from "async_hooks";
 import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { ExecuteCodeTool } from "./tools/ExecuteCodeTool";
@@ -13,6 +14,13 @@ import { ImportImageTool } from "./tools/ImportImageTool";
 import { ReplServer } from "./ReplServer";
 import { ApiDocs } from "./ApiDocs";
 
+/**
+ * Session context for request-scoped data.
+ */
+export interface SessionContext {
+    userToken?: string;
+}
+
 export class PenpotMcpServer {
     private readonly logger = createLogger("PenpotMcpServer");
     private readonly server: McpServer;
@@ -23,15 +31,21 @@ export class PenpotMcpServer {
     private readonly replServer: ReplServer;
     private apiDocs: ApiDocs;
 
+    /**
+     * Manages session-specific context, particularly user tokens for each request.
+     */
+    private readonly sessionContext = new AsyncLocalStorage<SessionContext>();
+
     private readonly transports = {
         streamable: {} as Record<string, StreamableHTTPServerTransport>,
-        sse: {} as Record<string, SSEServerTransport>,
+        sse: {} as Record<string, { transport: SSEServerTransport; userToken?: string }>,
     };
 
     constructor(
         private port: number = 4401,
         private webSocketPort: number = 4402,
-        replPort: number = 4403
+        replPort: number = 4403,
+        private isMultiUser: boolean = false
     ) {
         this.configLoader = new ConfigurationLoader();
         this.apiDocs = new ApiDocs();
@@ -47,10 +61,27 @@ export class PenpotMcpServer {
         );
 
         this.tools = new Map<string, Tool<any>>();
-        this.pluginBridge = new PluginBridge(webSocketPort);
+        this.pluginBridge = new PluginBridge(this, webSocketPort);
         this.replServer = new ReplServer(this.pluginBridge, replPort);
 
         this.registerTools();
+    }
+
+    /**
+     * Indicates whether the server is running in multi-user mode,
+     * where user tokens are required for authentication.
+     */
+    public isMultiUserMode(): boolean {
+        return this.isMultiUser;
+    }
+
+    /**
+     * Indicates whether file system access is enabled for MCP tools.
+     * Access is enabled only in single-user mode, where the file system is assumed
+     * to belong to the user running the server locally.
+     */
+    public isFileSystemAccessEnabled(): boolean {
+        return !this.isMultiUserMode();
     }
 
     public getInitialInstructions(): string {
@@ -59,14 +90,26 @@ export class PenpotMcpServer {
         return instructions;
     }
 
+    /**
+     * Retrieves the current session context.
+     *
+     * @returns The session context for the current request, or undefined if not in a request context
+     */
+    public getSessionContext(): SessionContext | undefined {
+        return this.sessionContext.getStore();
+    }
+
     private registerTools(): void {
+        // Create relevant tool instances (depending on file system access)
         const toolInstances: Tool<any>[] = [
             new ExecuteCodeTool(this),
             new HighLevelOverviewTool(this),
             new PenpotApiInfoTool(this, this.apiDocs),
-            new ExportShapeTool(this),
-            new ImportImageTool(this),
+            new ExportShapeTool(this), // tool adapts to file system access internally
         ];
+        if (this.isFileSystemAccessEnabled()) {
+            toolInstances.push(new ImportImageTool(this));
+        }
 
         for (const tool of toolInstances) {
             const toolName = tool.getToolName();
@@ -88,51 +131,70 @@ export class PenpotMcpServer {
     }
 
     private setupHttpEndpoints(): void {
+        /**
+         * Modern Streamable HTTP connection endpoint
+         */
         this.app.all("/mcp", async (req: any, res: any) => {
-            const { randomUUID } = await import("node:crypto");
+            const userToken = req.query.userToken as string | undefined;
 
-            const sessionId = req.headers["mcp-session-id"] as string | undefined;
-            let transport: StreamableHTTPServerTransport;
+            await this.sessionContext.run({ userToken }, async () => {
+                const { randomUUID } = await import("node:crypto");
 
-            if (sessionId && this.transports.streamable[sessionId]) {
-                transport = this.transports.streamable[sessionId];
-            } else {
-                transport = new StreamableHTTPServerTransport({
-                    sessionIdGenerator: () => randomUUID(),
-                    onsessioninitialized: (id: string) => {
-                        this.transports.streamable[id] = transport;
-                    },
+                const sessionId = req.headers["mcp-session-id"] as string | undefined;
+                let transport: StreamableHTTPServerTransport;
+
+                if (sessionId && this.transports.streamable[sessionId]) {
+                    transport = this.transports.streamable[sessionId];
+                } else {
+                    transport = new StreamableHTTPServerTransport({
+                        sessionIdGenerator: () => randomUUID(),
+                        onsessioninitialized: (id: string) => {
+                            this.transports.streamable[id] = transport;
+                        },
+                    });
+
+                    transport.onclose = () => {
+                        if (transport.sessionId) {
+                            delete this.transports.streamable[transport.sessionId];
+                        }
+                    };
+
+                    await this.server.connect(transport);
+                }
+
+                await transport.handleRequest(req, res, req.body);
+            });
+        });
+
+        /**
+         * Legacy SSE connection endpoint
+         */
+        this.app.get("/sse", async (req: any, res: any) => {
+            const userToken = req.query.userToken as string | undefined;
+
+            await this.sessionContext.run({ userToken }, async () => {
+                const transport = new SSEServerTransport("/messages", res);
+                this.transports.sse[transport.sessionId] = { transport, userToken };
+
+                res.on("close", () => {
+                    delete this.transports.sse[transport.sessionId];
                 });
 
-                transport.onclose = () => {
-                    if (transport.sessionId) {
-                        delete this.transports.streamable[transport.sessionId];
-                    }
-                };
-
                 await this.server.connect(transport);
-            }
-
-            await transport.handleRequest(req, res, req.body);
-        });
-
-        this.app.get("/sse", async (_req: any, res: any) => {
-            const transport = new SSEServerTransport("/messages", res);
-            this.transports.sse[transport.sessionId] = transport;
-
-            res.on("close", () => {
-                delete this.transports.sse[transport.sessionId];
             });
-
-            await this.server.connect(transport);
         });
 
+        /**
+         * SSE message POST endpoint (using previously established session)
+         */
         this.app.post("/messages", async (req: any, res: any) => {
             const sessionId = req.query.sessionId as string;
-            const transport = this.transports.sse[sessionId];
+            const session = this.transports.sse[sessionId];
 
-            if (transport) {
-                await transport.handlePostMessage(req, res, req.body);
+            if (session) {
+                await this.sessionContext.run({ userToken: session.userToken }, async () => {
+                    await session.transport.handlePostMessage(req, res, req.body);
+                });
             } else {
                 res.status(400).send("No transport found for sessionId");
             }

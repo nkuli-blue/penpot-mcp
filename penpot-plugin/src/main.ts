@@ -4,16 +4,25 @@ import "./style.css";
 const searchParams = new URLSearchParams(window.location.search);
 document.body.dataset.theme = searchParams.get("theme") ?? "light";
 
+// Determine whether multi-user mode is enabled based on URL parameters
+const isMultiUserMode = searchParams.get("multiUser") === "true";
+console.log("Penpot MCP multi-user mode:", isMultiUserMode);
+
 // WebSocket connection management
 let ws: WebSocket | null = null;
 const statusElement = document.getElementById("connection-status");
 
 /**
  * Updates the connection status display element.
+ *
+ * @param status - the base status text to display
+ * @param isConnectedState - whether the connection is in a connected state (affects color)
+ * @param message - optional additional message to append to the status
  */
-function updateConnectionStatus(status: string, isConnectedState: boolean): void {
+function updateConnectionStatus(status: string, isConnectedState: boolean, message?: string): void {
     if (statusElement) {
-        statusElement.textContent = status;
+        const displayText = message ? `${status}: ${message}` : status;
+        statusElement.textContent = displayText;
         statusElement.style.color = isConnectedState ? "var(--accent-primary)" : "var(--error-700)";
     }
 }
@@ -42,9 +51,13 @@ function connectToMcpServer(): void {
     }
 
     try {
-        // Use environment variable for MCP WebSocket URL, fallback to localhost for local development
-        const mcpWsUrl = import.meta.env.PENPOT_MCP_WEBSOCKET_URL || "ws://localhost:4402";
-        ws = new WebSocket(mcpWsUrl);
+        let wsUrl = import.meta.env.PENPOT_MCP_WEBSOCKET_URL || "ws://localhost:4402";
+        if (isMultiUserMode) {
+            // TODO obtain proper userToken from penpot
+            const userToken = "dummyToken";
+            wsUrl += `?userToken=${encodeURIComponent(userToken)}`;
+        }
+        ws = new WebSocket(wsUrl);
         updateConnectionStatus("Connecting...", false);
 
         ws.onopen = () => {
@@ -63,19 +76,22 @@ function connectToMcpServer(): void {
             }
         };
 
-        ws.onclose = () => {
+        ws.onclose = (event: CloseEvent) => {
             console.log("Disconnected from MCP server");
-            updateConnectionStatus("Disconnected", false);
+            const message = event.reason || undefined;
+            updateConnectionStatus("Disconnected", false, message);
             ws = null;
         };
 
         ws.onerror = (error) => {
             console.error("WebSocket error:", error);
+            // note: WebSocket error events typically don't contain detailed error messages
             updateConnectionStatus("Connection error", false);
         };
     } catch (error) {
         console.error("Failed to connect to MCP server:", error);
-        updateConnectionStatus("Connection failed", false);
+        const message = error instanceof Error ? error.message : undefined;
+        updateConnectionStatus("Connection failed", false, message);
     }
 }
 

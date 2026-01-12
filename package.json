@@ -5,8 +5,11 @@
   "scripts": {
     "install:all": "concurrently --names \"COMMON,MCP-SERVER,PLUGIN\" --prefix-colors \"green,cyan,magenta\" \"npm --prefix common install\" \"npm --prefix mcp-server install\" \"npm --prefix penpot-plugin install\"",
     "build:all": "concurrently --names \"COMMON,MCP-SERVER,PLUGIN\" --prefix-colors \"green,cyan,magenta\" --success first \"npm --prefix common install && npm --prefix common run build\" \"npm --prefix mcp-server run build\" \"npm --prefix penpot-plugin run build\"",
+    "build:all-multi-user": "concurrently --names \"COMMON,MCP-SERVER,PLUGIN\" --prefix-colors \"green,cyan,magenta\" --success first \"npm --prefix common install && npm --prefix common run build\" \"npm --prefix mcp-server run build\" \"npm --prefix penpot-plugin run build:multi-user\"",
     "start:all": "concurrently --names \"MCP-SERVER,PLUGIN-SERVER\" --prefix-colors \"cyan,magenta\" --kill-others-on-fail \"npm --prefix mcp-server start\" \"npm --prefix penpot-plugin run dev\"",
+    "start:all-multi-user": "concurrently --names \"MCP-SERVER,PLUGIN-SERVER\" --prefix-colors \"cyan,magenta\" --kill-others-on-fail \"npm --prefix mcp-server run start:multi-user\" \"npm --prefix penpot-plugin run dev:multi-user\"",
     "bootstrap": "npm run install:all && npm run build:all && npm run start:all",
+    "bootstrap:multi-user": "npm run install:all && npm run build:all-multi-user && npm run start:all-multi-user",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

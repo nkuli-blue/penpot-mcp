@@ -6,10 +6,16 @@ import { Task, TaskHandler } from "./TaskHandler";
  */
 const taskHandlers: TaskHandler[] = [new ExecuteCodeTaskHandler()];
 
-penpot.ui.open("Penpot MCP Plugin", `?theme=${penpot.theme}`, { width: 158, height: 200 });
+// Determine whether multi-user mode is enabled based on build-time configuration
+declare const IS_MULTI_USER_MODE: boolean;
+const isMultiUserMode = typeof IS_MULTI_USER_MODE !== "undefined" ? IS_MULTI_USER_MODE : false;
 
-// Handle both legacy string messages and new request-based messages
+// Open the plugin UI (main.ts)
+penpot.ui.open("Penpot MCP Plugin", `?theme=${penpot.theme}&multiUser=${isMultiUserMode}`, { width: 158, height: 200 });
+
+// Handle messages
 penpot.ui.onMessage<string | { id: string; task: string; params: any }>((message) => {
+    // Handle plugin task requests
     if (typeof message === "object" && message.task && message.id) {
         handlePluginTaskRequest(message).catch((error) => {
             console.error("Error in handlePluginTaskRequest:", error);
@@ -53,7 +59,7 @@ async function handlePluginTaskRequest(request: { id: string; task: string; para
     }
 }
 
-// Update the theme in the iframe
+// Handle theme change in the iframe
 penpot.on("themechange", (theme) => {
     penpot.ui.sendMessage({
         source: "penpot",

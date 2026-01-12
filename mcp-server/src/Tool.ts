@@ -1,7 +1,7 @@
 import { z } from "zod";
 import "reflect-metadata";
 import { TextResponse, ToolResponse } from "./ToolResponse";
-import type { PenpotMcpServer } from "./PenpotMcpServer";
+import type { PenpotMcpServer, SessionContext } from "./PenpotMcpServer";
 import { createLogger } from "./logger";
 
 /**
@@ -37,6 +37,10 @@ export abstract class Tool<TArgs extends object> {
         try {
             let argsInstance: TArgs = args as TArgs;
             this.logger.info("Executing tool: %s; arguments: %s", this.getToolName(), this.formatArgs(argsInstance));
+
+            // TODO: Remove; testing only
+            const sessionContext = this.mcpServer.getSessionContext();
+            this.logger.info("Session context: %s", sessionContext ? JSON.stringify(sessionContext) : "none");
 
             // execute the actual tool logic
             let result = await this.executeCore(argsInstance);
@@ -87,6 +91,15 @@ export abstract class Tool<TArgs extends object> {
         }
 
         return formatted.length > 0 ? "\n" + formatted.join("\n") : "{}";
+    }
+
+    /**
+     * Retrieves the current session context.
+     *
+     * @returns The session context for the current request, or undefined if not in a request context
+     */
+    protected getSessionContext(): SessionContext | undefined {
+        return this.mcpServer.getSessionContext();
     }
 
     public getInputSchema() {
