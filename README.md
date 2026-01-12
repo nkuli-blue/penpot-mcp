@@ -196,3 +196,15 @@ The above instructions describe how to run the MCP server and plugin server loca
 We are working on enabling remote deployments of the MCP server, particularly
 in [multi-user mode](docs/multi-user-mode.md), where multiple Penpot users will
 be able to connect to the same MCP server instance.
+
+To run the server remotely (even for a single user), 
+you may set the following environment variables to configure the two servers
+(MCP server & plugin server) appropriately:
+ * `PENPOT_MCP_REMOTE_MODE=true`: This ensures that the MCP server is operating
+   in remote mode, with local file system access disabled.
+ * `PENPOT_MCP_WEBSOCKET_URL=ws://<your-address>:4402`: This informs the 
+   Penpot MCP Plugin about the address of the server to connect to.
+ * `PENPOT_MCP_PLUGIN_SERVER_ALLOWED_HOSTS`: Set this to a comma-separated list
+   of listen addresses for the plugin web server. 
+   To accept connections from any address, use `0.0.0.0` (use caution in 
+   untrusted networks).
