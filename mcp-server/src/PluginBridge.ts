@@ -23,7 +23,7 @@ export class PluginBridge {
     private readonly taskTimeouts: Map<string, NodeJS.Timeout> = new Map();
 
     constructor(
-        private mcpServer: PenpotMcpServer,
+        public readonly mcpServer: PenpotMcpServer,
         private port: number,
         private taskTimeoutSecs: number = 30
     ) {
