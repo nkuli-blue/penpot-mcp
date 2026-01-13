@@ -208,16 +208,16 @@ options use the `PENPOT_MCP_` prefix for consistency.
 
 ### Logging Configuration
 
-| Environment Variable   | Description                                          | Default |
-|------------------------|------------------------------------------------------|---------|
-| `PENPOT_MCP_LOG_LEVEL` | Log level: `trace`, `debug`, `info`, `warn`, `error` | `info` |
-| `PENPOT_MCP_LOG_DIR`   | Directory for log files                              | `logs` |
+| Environment Variable   | Description                                          | Default  |
+|------------------------|------------------------------------------------------|----------|
+| `PENPOT_MCP_LOG_LEVEL` | Log level: `trace`, `debug`, `info`, `warn`, `error` | `info`   |
+| `PENPOT_MCP_LOG_DIR`   | Directory for log files                              | `logs`   |
 
 ### Plugin Server Configuration
 
-| Environment Variable                      | Description                                                                                                                                                                                                 | Default |
-|-------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| `PENPOT_MCP_PLUGIN_SERVER_LISTEN_ADDRESS` | Address on which the plugin web server listens. Can be a single address or a comma-separated list. For example, use `0.0.0.0` to accept connections from any address (use caution in untrusted networks).   | (local only) |
+| Environment Variable                      | Description                                                                             | Default      |
+|-------------------------------------------|-----------------------------------------------------------------------------------------|--------------|
+| `PENPOT_MCP_PLUGIN_SERVER_LISTEN_ADDRESS` | Address on which the plugin web server listens (single address or comma-separated list) | (local only) |
 
 ## Beyond Local Execution
 
@@ -231,13 +231,9 @@ you may set the following environment variables to configure the two servers
 (MCP server & plugin server) appropriately:
  * `PENPOT_MCP_REMOTE_MODE=true`: This ensures that the MCP server is operating
    in remote mode, with local file system access disabled.
- * `PENPOT_MCP_SERVER_LISTEN_ADDRESS=<address>`: Set this to the address on which
-   the MCP server listens (binds to). To accept connections from any address, use
-   `0.0.0.0` (use caution in untrusted networks).
+ * `PENPOT_MCP_SERVER_LISTEN_ADDRESS` and `PENPOT_MCP_PLUGIN_SERVER_LISTEN_ADDRESS`: 
+   Set these according to your requirements for remote connectivity.
+   To bind all interfaces, use `0.0.0.0` (use caution in untrusted networks).
  * `PENPOT_MCP_SERVER_ADDRESS=<your-address>`: This sets the hostname or IP address
    where the MCP server can be reached. The Penpot MCP Plugin uses this to construct
    the WebSocket URL as `ws://<your-address>:<port>` (default port: `4402`).
- * `PENPOT_MCP_PLUGIN_SERVER_LISTEN_ADDRESS`: Set this to the address (or a 
-   comma-separated list of addresses) on which the plugin web server listens. 
-   To accept connections from any address, use `0.0.0.0` (use caution in 
-   untrusted networks).
