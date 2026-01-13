@@ -44,6 +44,10 @@ export class PenpotMcpServer {
     private readonly port: number;
     private readonly webSocketPort: number;
     private readonly replPort: number;
+    private readonly listenAddress: string;
+    /**
+     * the address (domain name or IP address) via which clients can reach the MCP server
+     */
     public readonly serverAddress: string;
 
     constructor(private isMultiUser: boolean = false) {
@@ -51,6 +55,7 @@ export class PenpotMcpServer {
         this.port = parseInt(process.env.PENPOT_MCP_SERVER_PORT ?? "4401", 10);
         this.webSocketPort = parseInt(process.env.PENPOT_MCP_WEBSOCKET_PORT ?? "4402", 10);
         this.replPort = parseInt(process.env.PENPOT_MCP_REPL_PORT ?? "4403", 10);
+        this.listenAddress = process.env.PENPOT_MCP_SERVER_LISTEN_ADDRESS ?? "localhost";
         this.serverAddress = process.env.PENPOT_MCP_SERVER_ADDRESS ?? "localhost";
 
         this.configLoader = new ConfigurationLoader();
@@ -229,7 +234,7 @@ export class PenpotMcpServer {
         this.setupHttpEndpoints();
 
         return new Promise((resolve) => {
-            this.app.listen(this.port, async () => {
+            this.app.listen(this.port, this.listenAddress, async () => {
                 this.logger.info(`Multi-user mode: ${this.isMultiUserMode()}`);
                 this.logger.info(`Remote mode: ${this.isRemoteMode()}`);
                 this.logger.info(`Modern Streamable HTTP endpoint: http://${this.serverAddress}:${this.port}/mcp`);
