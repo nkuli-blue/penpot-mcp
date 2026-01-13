@@ -7,7 +7,7 @@ import { PenpotMcpServer } from "../PenpotMcpServer";
 import { ApiDocs } from "../ApiDocs";
 
 /**
- * Arguments class for the PenpotApiInfo tool with validation decorators.
+ * Arguments class for the PenpotApiInfoTool
  */
 export class PenpotApiInfoArgs {
     static schema = {

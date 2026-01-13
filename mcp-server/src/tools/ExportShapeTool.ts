@@ -7,7 +7,7 @@ import { ExecuteCodePluginTask } from "../tasks/ExecuteCodePluginTask";
 import { FileUtils } from "../utils/FileUtils";
 
 /**
- * Arguments class for ExecuteCodeTool
+ * Arguments class for ExportShapeTool
  */
 export class ExportShapeArgs {
     static schema = {
