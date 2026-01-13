@@ -22,7 +22,7 @@ export class TextContent implements TextItem {
     }
 }
 
-class ImageContent implements ImageItem {
+export class ImageContent implements ImageItem {
     [x: string]: unknown;
     readonly type = "image" as const;
 
@@ -36,7 +36,12 @@ class ImageContent implements ImageItem {
     ) {}
 
     /**
-     * @param data - PNG image data as Uint8Array or as object (from JSON conversion of Uint8Array)
+     * Utility function for ensuring a consistent Uint8Array representation of byte data.
+     * Input can be either a Uint8Array or an object (as obtained from JSON conversion of Uint8Array
+     * from the plugin).
+     *
+     * @param data - data as Uint8Array or as object (from JSON conversion of Uint8Array)
+     * @return data as Uint8Array
      */
     public static byteData(data: Uint8Array | object): Uint8Array {
         if (typeof data === "object") {

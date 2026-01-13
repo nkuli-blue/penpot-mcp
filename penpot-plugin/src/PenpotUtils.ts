@@ -1,4 +1,4 @@
-import { Page, Rectangle, Shape } from "@penpot/plugin-types";
+import { Fill, Page, Rectangle, Shape } from "@penpot/plugin-types";
 
 export class PenpotUtils {
     /**
@@ -251,5 +251,46 @@ export class PenpotUtils {
         rect.fills = [{ fillOpacity: 1, fillImage: imageData }];
 
         return rect;
+    }
+
+    /**
+     * Exports the given shape (or its fill) to BASE64 image data.
+     *
+     * This function is used internally by the ExportImageTool in the MCP server.
+     *
+     * @param shape - The shape whose image data to export
+     * @param mode - Either "shape" (to export the entire shape, including descendants) or "fill"
+     *    to export the shape's raw fill image data
+     * @param asSVG - Whether to export as SVG rather than as a pixel image (only supported for mode "shape")
+     * @returns A byte array containing the exported image data.
+     *   - For mode="shape", it will be PNG or SVG data depending on the value of `asSVG`.
+     *   - For mode="fill", it will be whatever format the fill image is stored in.
+     */
+    public static async exportImage(shape: Shape, mode: "shape" | "fill", asSVG: boolean): Promise<Uint8Array> {
+        switch (mode) {
+            case "shape":
+                return shape.export({ type: asSVG ? "svg" : "png" });
+            case "fill":
+                if (asSVG) {
+                    throw new Error("Image fills cannot be exported as SVG");
+                }
+                // check whether the shape has the `fills` member
+                if (!("fills" in shape)) {
+                    throw new Error("Shape with `fills` member is required for fill export mode");
+                }
+                // find first fill that has fillImage
+                const fills: Fill[] = (shape as any).fills;
+                for (const fill of fills) {
+                    if (fill.fillImage) {
+                        const imageData = fill.fillImage;
+                        // TODO: fix ts-ignore once Penpot types are updated to include data() method
+                        // @ts-ignore
+                        return imageData.data();
+                    }
+                }
+                throw new Error("No fill with image data found in the shape");
+            default:
+                throw new Error(`Unsupported export mode: ${mode}`);
+        }
     }
 }
