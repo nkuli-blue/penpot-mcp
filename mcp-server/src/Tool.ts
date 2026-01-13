@@ -38,10 +38,6 @@ export abstract class Tool<TArgs extends object> {
             let argsInstance: TArgs = args as TArgs;
             this.logger.info("Executing tool: %s; arguments: %s", this.getToolName(), this.formatArgs(argsInstance));
 
-            // TODO: Remove; testing only
-            const sessionContext = this.mcpServer.getSessionContext();
-            this.logger.info("Session context: %s", sessionContext ? JSON.stringify(sessionContext) : "none");
-
             // execute the actual tool logic
             let result = await this.executeCore(argsInstance);
 
