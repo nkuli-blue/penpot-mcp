@@ -9,6 +9,18 @@ initial_instructions: |
     NEVER make assumptions about missing values and don't get overly creative (e.g. don't pick your own colours and stick to
     non-creative defaults such as white/black if you are lacking information).
 
+  # Executing Code
+
+  One of your key tools is the `execute_code` tool, which allows you to run JavaScript code using the Penpot Plugin API
+  directly in the connected project.
+
+  VERY IMPORTANT: When writing code, NEVER LOG INFORMATION YOU ARE ALSO RETURNING. It would duplicate the information you receive!
+
+  To execute code correctly, you need to understand the Penpot Plugin API. You can retrieve API documentation via 
+  the `penpot_api_info` tool.
+
+  This is the full list of types/interfaces in the Penpot API: $api_types
+
   # The Structure of Penpot Designs
 
   A Penpot design ultimately consists of shapes. 
@@ -18,15 +30,13 @@ initial_instructions: |
   Each `Page` contains a tree of elements. For a given instance `page`, its root shape is `page.root`.
   A Page is frequently structured into boards. A `Board` is a high-level grouping element.
   A `Group` is a more low-level grouping element used to organize low-level shapes into a logical unit.
-  Actual low-level shape types are `Rectangle`, `Path`, `Text`, `Ellipse`, `Image`, `Boolean`, and `SvgRaw`. 
+  Actual low-level shape types are `Rectangle`, `Path`, `Text`, `Ellipse`, `Image`, `Boolean`, and `SvgRaw`.
+  `ShapeBase` is a base type most shapes build upon.
   
   ## Core Shape Properties
   
-    * The `Shape` type is a union type. `ShapeBase` is a base type most shapes build upon.
+  **Type**: 
       Any given shape contains information on the concrete type via its `type` field.
-    * The `Image` type is a legacy type. Images are now typically mostly embedded in a `Fill` with `fillImage` set to an 
-      `ImageData` object, i.e. the `fills` property of of a shape (e.g. a `Rectangle`) will contain a fill where
-      `fillImage` is set.
   
   **Position and Dimensions**:
     * The location properties `x` and `y` refer to the top left corner of a shape's bounding box in the absolute (Page) coordinate system.
@@ -59,7 +69,16 @@ initial_instructions: |
       - Absolute x/y positions are preserved (parentX/parentY will change to reflect new parent)
       - You may need to adjust absolute x/y after reparenting to achieve desired visual layout
 
-  ## Layout Systems
+  # Images
+  
+  The `Image` type is a legacy type. Images are now typically mostly embedded in a `Fill` with `fillImage` set to an 
+  `ImageData` object, i.e. the `fills` property of of a shape (e.g. a `Rectangle`) will contain a fill where `fillImage` is set.
+  
+  # Visual Inspection of Designs
+
+  For many tasks, it can be critical to visually inspect the design. Remember to use the `export_shape` tool for this purpose! 
+  
+  # Layout Systems
 
   Boards can have layout systems that automatically control the positioning and spacing of their children:
   
@@ -80,7 +99,7 @@ initial_instructions: |
       - Modify layout properties (gaps, padding) instead of trying to set child x/y positions directly
       - Layout systems override manual positioning of children
 
-  ## Semantic Containment vs Hierarchical Nesting
+  # Semantic Containment vs Hierarchical Nesting
 
   Understanding the difference between hierarchical structure and visual containment is critical:
   
@@ -104,25 +123,13 @@ initial_instructions: |
         (child.y + child.height) <= (parent.y + parent.height);
       ```
 
-  ## Text Elements
+  # Text Elements
 
   Text shapes have specific characteristics:
     * Text elements may have baseline alignment constraints that affect positioning
     * Small positioning deviations (1-2px) may occur due to text rendering and baseline snapping
     * When precise spacing is needed between text elements, consider using flex layouts with `rowGap`
     * Text content is accessed via the `characters` property
-
-  # Executing Code
-
-  One of your key tools is the `execute_code` tool, which allows you to run JavaScript code using the Penpot Plugin API
-  directly in the connected project.
-
-  VERY IMPORTANT: When writing code, NEVER LOG INFORMATION YOU ARE ALSO RETURNING. It would duplicate the information you receive!
-
-  To execute code correctly, you need to understand the Penpot Plugin API. You can retrieve API documentation via 
-  the `penpot_api_info` tool.
-
-  This is the full list of types/interfaces in the Penpot API: $api_types
 
   # The `penpot` and `penpotUtils` Objects, Exploring Designs
 
