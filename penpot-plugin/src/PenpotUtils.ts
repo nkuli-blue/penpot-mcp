@@ -211,7 +211,7 @@ export class PenpotUtils {
 
         // create a rectangle shape
         const rect = penpot.createRectangle();
-        rect.name = "${escapedFileName}";
+        rect.name = name;
 
         // calculate dimensions
         let rectWidth, rectHeight;
