@@ -1,10 +1,11 @@
-import { Fill, Page, Rectangle, Shape } from "@penpot/plugin-types";
+import { Fill, FlexLayout, GridLayout, Page, Rectangle, Shape } from "@penpot/plugin-types";
 
 export class PenpotUtils {
     /**
      * Generates an overview structure of the given shape,
      * providing its id, name and type, and recursively its children's attributes.
      * The `type` field indicates the type in the Penpot API.
+     * If the shape has a layout system (flex or grid), includes layout information.
      *
      * @param shape - The root shape to generate the structure from
      * @param maxDepth - Optional maximum depth to traverse (leave undefined for unlimited)
@@ -19,12 +20,35 @@ export class PenpotUtils {
                 );
             }
         }
-        return {
+
+        const result: any = {
             id: shape.id,
             name: shape.name,
             type: shape.type,
             children: children,
         };
+
+        // add layout information if present
+        if ("flex" in shape && shape.flex) {
+            const flex: FlexLayout = shape.flex;
+            result.layout = {
+                type: "flex",
+                dir: flex.dir,
+                rowGap: flex.rowGap,
+                columnGap: flex.columnGap,
+            };
+        } else if ("grid" in shape && shape.grid) {
+            const grid: GridLayout = shape.grid;
+            result.layout = {
+                type: "grid",
+                rows: grid.rows,
+                columns: grid.columns,
+                rowGap: grid.rowGap,
+                columnGap: grid.columnGap,
+            };
+        }
+
+        return result;
     }
 
     /**
