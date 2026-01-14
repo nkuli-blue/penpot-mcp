@@ -19,21 +19,98 @@ initial_instructions: |
   A Page is frequently structured into boards. A `Board` is a high-level grouping element.
   A `Group` is a more low-level grouping element used to organize low-level shapes into a logical unit.
   Actual low-level shape types are `Rectangle`, `Path`, `Text`, `Ellipse`, `Image`, `Boolean`, and `SvgRaw`. 
-  Concrete things to know about shapes:
+  
+  ## Core Shape Properties
+  
     * The `Shape` type is a union type. `ShapeBase` is a base type most shapes build upon.
       Any given shape contains information on the concrete type via its `type` field.
     * The `Image` type is a legacy type. Images are now typically mostly embedded in a `Fill` with `fillImage` set to an 
       `ImageData` object, i.e. the `fills` property of of a shape (e.g. a `Rectangle`) will contain a fill where
       `fillImage` is set.
-    * The location properties `x` and `y` refer to the top left corner of a shape's bounding box in the absolute (Page) coordinate system. 
-    * When a shape is a child of a parent shape, the property `parent` refers to the parent shape, and the read-only properties 
-      `parentX` and `parentY` (as well as `boardX` and `boardY`) provide the position of the shape relative to its parent (containing board).
+  
+  **Position and Dimensions**:
+    * The location properties `x` and `y` refer to the top left corner of a shape's bounding box in the absolute (Page) coordinate system.
+      These are writable - set them directly to position shapes.
+    * `parentX` and `parentY` (as well as `boardX` and `boardY`) are READ-ONLY computed properties showing position relative to parent/board.
       To position a shape within its parent, set the absolute `x` and `y` properties accordingly.
+    * `width` and `height` are READ-ONLY. Use `resize(width, height)` method to change dimensions.
+    * `bounds` is a READ-ONLY property. Use `x`, `y` with `resize()` to modify shape bounds.
+  
+  **Other Writable Properties**:
+    * `name` - Shape name
+    * `fills`, `strokes` - Styling properties
+    * `rotation`, `opacity`, `blocked`, `hidden`, `visible`
+  
+  **Z-Order**:
     * The z-order of shapes is determined by the order in the `children` array of the parent shape.
       Therefore, when creating shapes that should be on top of each other, add them to the parent in the correct order
       (i.e. add background shapes first, then foreground shapes later).
-      To modify z-order after creation, use the following methods on shapes:  `bringToFront()`, `sendToBack()`, `bringForward()`, `sendBackward()`,
+    * To modify z-order after creation, use these methods: `bringToFront()`, `sendToBack()`, `bringForward()`, `sendBackward()`,
       and, for precise control, `setParentIndex(index)` (0-based).
+  
+  **Modification Methods**:
+    * `resize(width, height)` - Change dimensions (required for width/height since they're read-only)
+    * `rotate(angle, center?)` - Rotate shape
+    * `remove()` - Permanently destroy the shape (use only for deletion, NOT for reparenting)
+  
+  **Reparenting (Moving Shapes Between Parents)**:
+    * `newParent.appendChild(shape)` or `newParent.insertChild(index, shape)` - Move shape to new parent
+      - Automatically removes the shape from its old parent
+      - Absolute x/y positions are preserved (parentX/parentY will change to reflect new parent)
+      - You may need to adjust absolute x/y after reparenting to achieve desired visual layout
+
+  ## Layout Systems
+
+  Boards can have layout systems that automatically control the positioning and spacing of their children:
+  
+    * **Flex Layout**: `board.flex` - A flexbox-style layout system
+      - Properties: `dir` (direction), `rowGap`, `columnGap`, `alignItems`, `justifyContent`
+      - Padding: `topPadding`, `rightPadding`, `bottomPadding`, `leftPadding`, or combined `verticalPadding`, `horizontalPadding`
+      - When a board has flex layout, child positions are controlled by the layout system, not by individual x/y coordinates
+      - To modify spacing: adjust `rowGap` and `columnGap` properties, not individual child positions
+      - Check with: `if (board.flex) { /* board uses flex layout */ }`
+    
+    * **Grid Layout**: `board.grid` - A CSS grid-style layout system
+      - Properties: `rows`, `columns`, `rowGap`, `columnGap`
+      - Children are positioned according to grid cells
+      - Check with: `if (board.grid) { /* board uses grid layout */ }`
+    
+    * When working with layouts:
+      - ALWAYS check if a board has a layout system before attempting to reposition children
+      - Modify layout properties (gaps, padding) instead of trying to set child x/y positions directly
+      - Layout systems override manual positioning of children
+
+  ## Semantic Containment vs Hierarchical Nesting
+
+  Understanding the difference between hierarchical structure and visual containment is critical:
+  
+    * **Hierarchical nesting** (parent/child in the shape tree) does NOT always equal **visual containment**
+    * Visual containment means a child shape is fully within the visual bounds of its parent
+    * Common design patterns require semantic containment:
+      - Text overlaying an image → text must be a CHILD of the image board
+      - Card with background image and text → text elements are children of the card board
+      - Button with icon and label → icon and label are children of the button background
+    
+    * **Common mistake**: Creating sibling shapes when one should contain the other
+      Example: A card board with an image, and a separate text board positioned below it as a sibling.
+      This is incorrect if the text should overlay the image. The text should be a child of the card board.
+    
+    * **Verification**: Always verify visual containment when working with nested structures:
+      ```javascript
+      const isVisuallyContained = 
+        child.x >= parent.x && 
+        child.y >= parent.y &&
+        (child.x + child.width) <= (parent.x + parent.width) &&
+        (child.y + child.height) <= (parent.y + parent.height);
+      ```
+
+  ## Text Elements
+
+  Text shapes have specific characteristics:
+    * Text elements may have baseline alignment constraints that affect positioning
+    * Small positioning deviations (1-2px) may occur due to text rendering and baseline snapping
+    * When precise spacing is needed between text elements, consider using flex layouts with `rowGap`
+    * Text content is accessed via the `characters` property
 
   # Executing Code
 
