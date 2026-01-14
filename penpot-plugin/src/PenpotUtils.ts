@@ -165,6 +165,40 @@ export class PenpotUtils {
     }
 
     /**
+     * Checks if a child shape is fully contained within its parent's bounds.
+     * Visual containment means all edges of the child are within the parent's bounding box.
+     *
+     * @param child - The child shape to check
+     * @param parent - The parent shape to check against
+     * @returns true if child is fully contained within parent bounds, false otherwise
+     */
+    public static isContainedIn(child: Shape, parent: Shape): boolean {
+        return (
+            child.x >= parent.x &&
+            child.y >= parent.y &&
+            child.x + child.width <= parent.x + parent.width &&
+            child.y + child.height <= parent.y + parent.height
+        );
+    }
+
+    /**
+     * Sets the position of a shape relative to its parent's position.
+     * This is a convenience method since parentX and parentY are read-only properties.
+     *
+     * @param shape - The shape to position
+     * @param parentX - The desired X position relative to the parent
+     * @param parentY - The desired Y position relative to the parent
+     * @throws Error if the shape has no parent
+     */
+    public static setParentXY(shape: Shape, parentX: number, parentY: number): void {
+        if (!shape.parent) {
+            throw new Error("Shape has no parent - cannot set parent-relative position");
+        }
+        shape.x = shape.parent.x + parentX;
+        shape.y = shape.parent.y + parentY;
+    }
+
+    /**
      * Decodes a base64 string to a Uint8Array.
      * This is required because the Penpot plugin environment does not provide the atob function.
      *

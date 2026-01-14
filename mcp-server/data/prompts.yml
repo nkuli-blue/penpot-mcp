@@ -42,7 +42,7 @@ initial_instructions: |
     * The location properties `x` and `y` refer to the top left corner of a shape's bounding box in the absolute (Page) coordinate system.
       These are writable - set them directly to position shapes.
     * `parentX` and `parentY` (as well as `boardX` and `boardY`) are READ-ONLY computed properties showing position relative to parent/board.
-      To position a shape within its parent, set the absolute `x` and `y` properties accordingly.
+      To position relative to parent, use `penpotUtils.setParentXY(shape, parentX, parentY)` or manually set `shape.x = parent.x + parentX`.
     * `width` and `height` are READ-ONLY. Use `resize(width, height)` method to change dimensions.
     * `bounds` is a READ-ONLY property. Use `x`, `y` with `resize()` to modify shape bounds.
 
@@ -114,14 +114,7 @@ initial_instructions: |
       Example: A card board with an image, and a separate text board positioned below it as a sibling.
       This is incorrect if the text should overlay the image. The text should be a child of the card board.
     
-    * **Verification**: Always verify visual containment when working with nested structures:
-      ```javascript
-      const isVisuallyContained = 
-        child.x >= parent.x && 
-        child.y >= parent.y &&
-        (child.x + child.width) <= (parent.x + parent.width) &&
-        (child.y + child.height) <= (parent.y + parent.height);
-      ```
+    * **Verification**: Use `penpotUtils.isContainedIn(child, parent)` to verify visual containment
 
   # Text Elements
 
@@ -155,6 +148,10 @@ initial_instructions: |
     * findShape(predicate: (shape: Shape) => boolean, root: Shape | null = null): Shape | null
       If no root is provided, search globally (in all pages).
     * findShapes(predicate: (shape: Shape) => boolean, root: Shape | null = null): Shape[]
+    * isContainedIn(child: Shape, parent: Shape): boolean
+      Returns true if child is fully within parent's visual bounds
+    * setParentXY(shape: Shape, parentX: number, parentY: number): void
+      Sets shape position relative to its parent (since parentX/parentY are read-only)
 
   General pointers for working with Penpot designs:
     * Prefer `penpotUtils` helper functions — avoid reimplementing shape searching.
