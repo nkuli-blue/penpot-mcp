@@ -51,9 +51,9 @@ export class PluginBridge {
             }
 
             if (userToken) {
-                this.logger.info("New WebSocket connection established (authenticated)");
+                this.logger.info("New WebSocket connection established (token provided)");
             } else {
-                this.logger.info("New WebSocket connection established (unauthenticated)");
+                this.logger.info("New WebSocket connection established");
             }
 
             // register the client connection with both indexes
@@ -70,12 +70,12 @@ export class PluginBridge {
             }
 
             ws.on("message", (data: Buffer) => {
-                this.logger.info("Received WebSocket message: %s", data.toString());
+                this.logger.debug("Received WebSocket message: %s", data.toString());
                 try {
                     const response: PluginTaskResponse<any> = JSON.parse(data.toString());
                     this.handlePluginTaskResponse(response);
                 } catch (error) {
-                    this.logger.error(error, "Failed to parse WebSocket message");
+                    this.logger.error(error, "Failure while processing WebSocket message");
                 }
             });
 
