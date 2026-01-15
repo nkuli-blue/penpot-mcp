@@ -33,7 +33,7 @@ initial_instructions: |
   Actual low-level shape types are `Rectangle`, `Path`, `Text`, `Ellipse`, `Image`, `Boolean`, and `SvgRaw`.
   `ShapeBase` is a base type most shapes build upon.
 
-  ## Core Shape Properties
+  # Core Shape Properties and Methods
 
   **Type**: 
       Any given shape contains information on the concrete type via its `type` field.
@@ -63,11 +63,12 @@ initial_instructions: |
     * `rotate(angle, center?)` - Rotate shape
     * `remove()` - Permanently destroy the shape (use only for deletion, NOT for reparenting)
 
-  **Reparenting (Moving Shapes Between Parents)**:
-    * `newParent.appendChild(shape)` or `newParent.insertChild(index, shape)` - Move shape to new parent
+  **Hierarchical Structure**:
+    * `parent` - The parent shape (null for root shapes)
+      Note: Hierarchical nesting does not necessarily imply visual containment
+    * Reparenting: `newParent.appendChild(shape)` or `newParent.insertChild(index, shape)` - Move shape to new parent
       - Automatically removes the shape from its old parent
-      - Absolute x/y positions are preserved (parentX/parentY will change to reflect new parent)
-      - You may need to adjust absolute x/y after reparenting to achieve desired visual layout
+      - Absolute x/y positions are preserved (use `penpotUtils.setParentXY` to adjust relative position)
 
   # Images
 
@@ -98,23 +99,6 @@ initial_instructions: |
       - ALWAYS check if a board has a layout system before attempting to reposition children
       - Modify layout properties (gaps, padding) instead of trying to set child x/y positions directly
       - Layout systems override manual positioning of children
-
-  # Semantic Containment vs Hierarchical Nesting
-
-  Understanding the difference between hierarchical structure and visual containment is critical:
-
-    * **Hierarchical nesting** (parent/child in the shape tree) does NOT always equal **visual containment**
-    * Visual containment means a child shape is fully within the visual bounds of its parent
-    * Common design patterns require semantic containment:
-      - Text overlaying an image → text must be a CHILD of the image board
-      - Card with background image and text → text elements are children of the card board
-      - Button with icon and label → icon and label are children of the button background
-    
-    * **Common mistake**: Creating sibling shapes when one should contain the other
-      Example: A card board with an image, and a separate text board positioned below it as a sibling.
-      This is incorrect if the text should overlay the image. The text should be a child of the card board.
-    
-    * **Verification**: Use `penpotUtils.isContainedIn(child, parent)` to verify visual containment
 
   # Text Elements
 
