@@ -199,6 +199,48 @@ export class PenpotUtils {
     }
 
     /**
+     * Analyzes all descendants of a shape by applying an evaluator function to each.
+     * Only descendants for which the evaluator returns a non-null/non-undefined value are included in the result.
+     * This is a general-purpose utility for validation, analysis, or collecting corrector functions.
+     *
+     * @param root - The root shape whose descendants to analyze
+     * @param evaluator - Function called for each descendant; return null/undefined to skip
+     * @param maxDepth - Optional maximum depth to traverse (undefined for unlimited)
+     * @returns Array of objects containing the shape and the evaluator's result
+     */
+    public static analyzeDescendants<T>(
+        root: Shape,
+        evaluator: (descendant: Shape) => T | null | undefined,
+        maxDepth: number | undefined = undefined
+    ): Array<{ shape: Shape; result: NonNullable<T> }> {
+        const results: Array<{ shape: Shape; result: NonNullable<T> }> = [];
+
+        const traverse = (shape: Shape, currentDepth: number): void => {
+            const result = evaluator(shape);
+            if (result !== null && result !== undefined) {
+                results.push({ shape, result: result as NonNullable<T> });
+            }
+
+            if (maxDepth === undefined || currentDepth < maxDepth) {
+                if ("children" in shape && shape.children) {
+                    for (const child of shape.children) {
+                        traverse(child, currentDepth + 1);
+                    }
+                }
+            }
+        };
+
+        // Start traversal with root's children (not root itself)
+        if ("children" in root && root.children) {
+            for (const child of root.children) {
+                traverse(child, 1);
+            }
+        }
+
+        return results;
+    }
+
+    /**
      * Decodes a base64 string to a Uint8Array.
      * This is required because the Penpot plugin environment does not provide the atob function.
      *

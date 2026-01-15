@@ -152,6 +152,10 @@ initial_instructions: |
       Returns true if child is fully within parent's visual bounds
     * setParentXY(shape: Shape, parentX: number, parentY: number): void
       Sets shape position relative to its parent (since parentX/parentY are read-only)
+    * analyzeDescendants<T>(root: Shape, evaluator: (descendant: Shape) => T | null | undefined, maxDepth?: number): Array<{ shape: Shape, result: T }>
+      General-purpose utility for analyzing/validating descendants
+      Calls evaluator on each descendant; collects non-null/undefined results
+      Powerful pattern: evaluator can return corrector functions or diagnostic data
 
   General pointers for working with Penpot designs:
     * Prefer `penpotUtils` helper functions — avoid reimplementing shape searching.
@@ -173,6 +177,18 @@ initial_instructions: |
         const structure = penpotUtils.shapeStructure(penpot.selection[0]);
     * Find shapes in current selection/board:
         const shapes = penpotUtils.findShapes(predicate, penpot.selection[0] || penpot.root);
+    * Validate/analyze descendants (returns corrector functions):
+        const fixes = penpotUtils.analyzeDescendants(board, (shape) => {
+          const xMod = shape.parentX % 4;
+          if (xMod !== 0) {
+            return () => penpotUtils.setParentXY(shape, Math.round(shape.parentX / 4) * 4, shape.parentY);
+          }
+        });
+        fixes.forEach(f => f.result()); // Apply all fixes
+    * Find containment violations:
+        const violations = penpotUtils.analyzeDescendants(board, (shape) => {
+          return !penpotUtils.isContainedIn(shape, board) ? 'outside-bounds' : null;
+        });
 
   # Asset Libraries
     
