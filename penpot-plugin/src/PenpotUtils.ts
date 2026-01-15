@@ -204,19 +204,19 @@ export class PenpotUtils {
      * This is a general-purpose utility for validation, analysis, or collecting corrector functions.
      *
      * @param root - The root shape whose descendants to analyze
-     * @param evaluator - Function called for each descendant; return null/undefined to skip
+     * @param evaluator - Function called for each descendant with (root, descendant); return null/undefined to skip
      * @param maxDepth - Optional maximum depth to traverse (undefined for unlimited)
      * @returns Array of objects containing the shape and the evaluator's result
      */
     public static analyzeDescendants<T>(
         root: Shape,
-        evaluator: (descendant: Shape) => T | null | undefined,
+        evaluator: (root: Shape, descendant: Shape) => T | null | undefined,
         maxDepth: number | undefined = undefined
     ): Array<{ shape: Shape; result: NonNullable<T> }> {
         const results: Array<{ shape: Shape; result: NonNullable<T> }> = [];
 
         const traverse = (shape: Shape, currentDepth: number): void => {
-            const result = evaluator(shape);
+            const result = evaluator(root, shape);
             if (result !== null && result !== undefined) {
                 results.push({ shape, result: result as NonNullable<T> });
             }
