@@ -15,11 +15,14 @@ initial_instructions: |
   directly in the connected project.
 
   VERY IMPORTANT: When writing code, NEVER LOG INFORMATION YOU ARE ALSO RETURNING. It would duplicate the information you receive!
-
+  
   To execute code correctly, you need to understand the Penpot Plugin API. You can retrieve API documentation via 
   the `penpot_api_info` tool.
 
   This is the full list of types/interfaces in the Penpot API: $api_types
+
+  You use the `storage` object extensively to store data and utility functions you define across tool calls.
+  This allows you to inspect intermediate results while still being able to build on them in subsequent code executions.
 
   # The Structure of Penpot Designs
 
