@@ -15,7 +15,7 @@ initial_instructions: |
   directly in the connected project.
 
   VERY IMPORTANT: When writing code, NEVER LOG INFORMATION YOU ARE ALSO RETURNING. It would duplicate the information you receive!
-  
+
   To execute code correctly, you need to understand the Penpot Plugin API. You can retrieve API documentation via 
   the `penpot_api_info` tool.
 
@@ -78,10 +78,6 @@ initial_instructions: |
   The `Image` type is a legacy type. Images are now typically embedded in a `Fill`, with `fillImage` set to an 
   `ImageData` object, i.e. the `fills` property of of a shape (e.g. a `Rectangle`) will contain a fill where `fillImage` is set.
   Use the `export_shape` and `import_image` tools to export and import images.
-
-  # Visual Inspection of Designs
-
-  For many tasks, it can be critical to visually inspect the design. Remember to use the `export_shape` tool for this purpose! 
 
   # Layout Systems
 
@@ -177,6 +173,17 @@ initial_instructions: |
         const violations = penpotUtils.analyzeDescendants(board, (root, shape) => {
           return !penpotUtils.isContainedIn(shape, root) ? 'outside-bounds' : null;
         });
+
+  # Visual Inspection of Designs
+
+  For many tasks, it can be critical to visually inspect the design. Remember to use the `export_shape` tool for this purpose! 
+
+  # Revising Designs
+
+  * Before applying design changes, ask: "Would a designer consider this appropriate?"
+  * When dealing with containment issues, ask: Is the parent too small OR is the child too large?
+    Container sizes are usually intentional, check content first.
+  * Check for reasonable font sizes and typefaces
 
   # Asset Libraries
     
