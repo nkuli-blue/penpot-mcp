@@ -72,8 +72,9 @@ initial_instructions: |
 
   # Images
 
-  The `Image` type is a legacy type. Images are now typically mostly embedded in a `Fill` with `fillImage` set to an 
+  The `Image` type is a legacy type. Images are now typically embedded in a `Fill`, with `fillImage` set to an 
   `ImageData` object, i.e. the `fills` property of of a shape (e.g. a `Rectangle`) will contain a fill where `fillImage` is set.
+  Use the `export_shape` and `import_image` tools to export and import images.
 
   # Visual Inspection of Designs
 
