@@ -222,7 +222,7 @@ Penpot:
         ```
       root: |-
         ```
-        root: null | Shape
+        readonly root: null | Shape
         ```
 
         The root shape in the current Penpot context. Requires `content:read` permission.
@@ -233,7 +233,7 @@ Penpot:
         ```
       currentFile: |-
         ```
-        currentFile: null | File
+        readonly currentFile: null | File
         ```
 
         Retrieves file data from the current Penpot context. Requires `content:read` permission.
@@ -248,7 +248,7 @@ Penpot:
         ```
       currentPage: |-
         ```
-        currentPage: null | Page
+        readonly currentPage: null | Page
         ```
 
         The current page in the Penpot context. Requires `content:read` permission.
@@ -259,7 +259,7 @@ Penpot:
         ```
       viewport: |-
         ```
-        viewport: Viewport
+        readonly viewport: Viewport
         ```
 
         The viewport settings in the Penpot context.
@@ -270,7 +270,7 @@ Penpot:
         ```
       history: |-
         ```
-        history: HistoryContext
+        readonly history: HistoryContext
         ```
 
         Context encapsulating the history operations
@@ -281,7 +281,7 @@ Penpot:
         ```
       library: |-
         ```
-        library: LibraryContext
+        readonly library: LibraryContext
         ```
 
         The library context in the Penpot context, including both local and connected libraries. Requires `library:read` permission.
@@ -292,7 +292,7 @@ Penpot:
         ```
       fonts: |-
         ```
-        fonts: FontsContext
+        readonly fonts: FontsContext
         ```
 
         The fonts context in the Penpot context, providing methods to manage fonts. Requires `content:read` permission.
@@ -303,7 +303,7 @@ Penpot:
         ```
       currentUser: |-
         ```
-        currentUser: User
+        readonly currentUser: User
         ```
 
         The current user in the Penpot context. Requires `user:read` permission.
@@ -314,7 +314,7 @@ Penpot:
         ```
       activeUsers: |-
         ```
-        activeUsers: ActiveUser[]
+        readonly activeUsers: ActiveUser[]
         ```
 
         An array of active users in the Penpot context. Requires `user:read` permission.
@@ -325,7 +325,7 @@ Penpot:
         ```
       theme: |-
         ```
-        theme: Theme
+        readonly theme: Theme
         ```
 
         The current theme (light or dark) in Penpot.
@@ -336,7 +336,7 @@ Penpot:
         ```
       localStorage: |-
         ```
-        localStorage: LocalStorage
+        readonly localStorage: LocalStorage
         ```
 
         Access to the localStorage proxy
@@ -908,7 +908,7 @@ ActiveUser:
         ```
       zoom: |-
         ```
-        zoom?: number
+        readonly zoom?: number
         ```
 
         The zoom level of the active user.
@@ -919,7 +919,7 @@ ActiveUser:
         ```
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the user.
@@ -930,7 +930,7 @@ ActiveUser:
         ```
       name: |-
         ```
-        name?: string
+        readonly name?: string
         ```
 
         The name of the user.
@@ -941,7 +941,7 @@ ActiveUser:
         ```
       avatarUrl: |-
         ```
-        avatarUrl?: string
+        readonly avatarUrl?: string
         ```
 
         The URL of the user's avatar image.
@@ -952,7 +952,7 @@ ActiveUser:
         ```
       color: |-
         ```
-        color: string
+        readonly color: string
         ```
 
         The color associated with the user.
@@ -963,7 +963,7 @@ ActiveUser:
         ```
       sessionId: |-
         ```
-        sessionId?: string
+        readonly sessionId?: string
         ```
 
         The session ID of the user.
@@ -1158,7 +1158,7 @@ Board:
     Properties:
       type: |-
         ```
-        type
+        readonly type
         ```
 
         The type of the shape, which is always 'board' for boards.
@@ -1176,13 +1176,13 @@ Board:
         WHen true the board will be displayed in the view mode
       grid: |-
         ```
-        grid?: GridLayout
+        readonly grid?: GridLayout
         ```
 
         The grid layout configuration of the board, if applicable.
       flex: |-
         ```
-        flex?: FlexLayout
+        readonly flex?: FlexLayout
         ```
 
         The flex layout configuration of the board, if applicable.
@@ -1194,7 +1194,7 @@ Board:
         The guides associated with the board.
       rulerGuides: |-
         ```
-        rulerGuides: RulerGuide[]
+        readonly rulerGuides: RulerGuide[]
         ```
 
         The ruler guides attached to the board
@@ -1234,7 +1234,7 @@ Board:
         ```
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the shape.
@@ -1246,14 +1246,14 @@ Board:
         The name of the shape.
       parent: |-
         ```
-        parent: null | Shape
+        readonly parent: null | Shape
         ```
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
       parentIndex: |-
         ```
-        parentIndex: number
+        readonly parentIndex: number
         ```
 
         Returns the index of the current shape in the parent
@@ -1271,19 +1271,19 @@ Board:
         The y-coordinate of the shape's position.
       width: |-
         ```
-        width: number
+        readonly width: number
         ```
 
         The width of the shape.
       height: |-
         ```
-        height: number
+        readonly height: number
         ```
 
         The height of the shape.
       bounds: |-
         ```
-        bounds: Bounds
+        readonly bounds: Bounds
         ```
 
         Returns
@@ -1291,7 +1291,7 @@ Board:
         Returns the bounding box surrounding the current shape
       center: |-
         ```
-        center: Point
+        readonly center: Point
         ```
 
         Returns
@@ -1471,19 +1471,19 @@ Board:
         The strokes applied to the shape.
       layoutChild: |-
         ```
-        layoutChild?: LayoutChildProperties
+        readonly layoutChild?: LayoutChildProperties
         ```
 
         Layout properties for children of the shape.
       layoutCell: |-
         ```
-        layoutCell?: LayoutChildProperties
+        readonly layoutCell?: LayoutChildProperties
         ```
 
         Layout properties for cells in a grid layout.
       interactions: |-
         ```
-        interactions: Interaction[]
+        readonly interactions: Interaction[]
         ```
 
         The interactions for the current shape.
@@ -2156,7 +2156,7 @@ VariantContainer:
     Properties:
       type: |-
         ```
-        type
+        readonly type
         ```
 
         The type of the shape, which is always 'board' for boards.
@@ -2174,13 +2174,13 @@ VariantContainer:
         WHen true the board will be displayed in the view mode
       grid: |-
         ```
-        grid?: GridLayout
+        readonly grid?: GridLayout
         ```
 
         The grid layout configuration of the board, if applicable.
       flex: |-
         ```
-        flex?: FlexLayout
+        readonly flex?: FlexLayout
         ```
 
         The flex layout configuration of the board, if applicable.
@@ -2192,7 +2192,7 @@ VariantContainer:
         The guides associated with the board.
       rulerGuides: |-
         ```
-        rulerGuides: RulerGuide[]
+        readonly rulerGuides: RulerGuide[]
         ```
 
         The ruler guides attached to the board
@@ -2230,13 +2230,13 @@ VariantContainer:
         ```
       variants: |-
         ```
-        variants: null | Variants
+        readonly variants: null | Variants
         ```
 
         Access to the Variant interface, for attributes and actions over the full Variant (not only this VariantContainer)
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the shape.
@@ -2248,14 +2248,14 @@ VariantContainer:
         The name of the shape.
       parent: |-
         ```
-        parent: null | Shape
+        readonly parent: null | Shape
         ```
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
       parentIndex: |-
         ```
-        parentIndex: number
+        readonly parentIndex: number
         ```
 
         Returns the index of the current shape in the parent
@@ -2273,19 +2273,19 @@ VariantContainer:
         The y-coordinate of the shape's position.
       width: |-
         ```
-        width: number
+        readonly width: number
         ```
 
         The width of the shape.
       height: |-
         ```
-        height: number
+        readonly height: number
         ```
 
         The height of the shape.
       bounds: |-
         ```
-        bounds: Bounds
+        readonly bounds: Bounds
         ```
 
         Returns
@@ -2293,7 +2293,7 @@ VariantContainer:
         Returns the bounding box surrounding the current shape
       center: |-
         ```
-        center: Point
+        readonly center: Point
         ```
 
         Returns
@@ -2473,19 +2473,19 @@ VariantContainer:
         The strokes applied to the shape.
       layoutChild: |-
         ```
-        layoutChild?: LayoutChildProperties
+        readonly layoutChild?: LayoutChildProperties
         ```
 
         Layout properties for children of the shape.
       layoutCell: |-
         ```
-        layoutCell?: LayoutChildProperties
+        readonly layoutCell?: LayoutChildProperties
         ```
 
         Layout properties for cells in a grid layout.
       interactions: |-
         ```
-        interactions: Interaction[]
+        readonly interactions: Interaction[]
         ```
 
         The interactions for the current shape.
@@ -3148,7 +3148,7 @@ Boolean:
     Properties:
       type: |-
         ```
-        type
+        readonly type
         ```
 
         The type of the shape, which is always 'bool' for boolean operation shapes.
@@ -3184,13 +3184,13 @@ Boolean:
         Overrides ShapeBase.fills
       children: |-
         ```
-        children: Shape[]
+        readonly children: Shape[]
         ```
 
         The children shapes contained within the boolean shape.
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the shape.
@@ -3202,14 +3202,14 @@ Boolean:
         The name of the shape.
       parent: |-
         ```
-        parent: null | Shape
+        readonly parent: null | Shape
         ```
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
       parentIndex: |-
         ```
-        parentIndex: number
+        readonly parentIndex: number
         ```
 
         Returns the index of the current shape in the parent
@@ -3227,19 +3227,19 @@ Boolean:
         The y-coordinate of the shape's position.
       width: |-
         ```
-        width: number
+        readonly width: number
         ```
 
         The width of the shape.
       height: |-
         ```
-        height: number
+        readonly height: number
         ```
 
         The height of the shape.
       bounds: |-
         ```
-        bounds: Bounds
+        readonly bounds: Bounds
         ```
 
         Returns
@@ -3247,7 +3247,7 @@ Boolean:
         Returns the bounding box surrounding the current shape
       center: |-
         ```
-        center: Point
+        readonly center: Point
         ```
 
         Returns
@@ -3427,19 +3427,19 @@ Boolean:
         The strokes applied to the shape.
       layoutChild: |-
         ```
-        layoutChild?: LayoutChildProperties
+        readonly layoutChild?: LayoutChildProperties
         ```
 
         Layout properties for children of the shape.
       layoutCell: |-
         ```
-        layoutCell?: LayoutChildProperties
+        readonly layoutCell?: LayoutChildProperties
         ```
 
         Layout properties for cells in a grid layout.
       interactions: |-
         ```
-        interactions: Interaction[]
+        readonly interactions: Interaction[]
         ```
 
         The interactions for the current shape.
@@ -3945,19 +3945,19 @@ CloseOverlay:
     Properties:
       type: |-
         ```
-        type
+        readonly type
         ```
 
         The action type
       destination: |-
         ```
-        destination?: Board
+        readonly destination?: Board
         ```
 
         The overlay to be closed with this action.
       animation: |-
         ```
-        animation: Animation
+        readonly animation: Animation
         ```
 
         Animation displayed with this interaction.
@@ -4074,7 +4074,7 @@ ColorShapeInfo:
     Properties:
       shapesInfo: |-
         ```
-        shapesInfo: ColorShapeInfoEntry[]
+        readonly shapesInfo: ColorShapeInfoEntry[]
         ```
 
         List of shapes with additional information
@@ -4098,20 +4098,20 @@ ColorShapeInfoEntry:
     Properties:
       property: |-
         ```
-        property: string
+        readonly property: string
         ```
 
         Property that has the color (example: fill, stroke...)
       index: |-
         ```
-        index?: number
+        readonly index?: number
         ```
 
         For properties that are indexes (such as fill) represent the index
         of the color inside that property.
       shapeId: |-
         ```
-        shapeId: string
+        readonly shapeId: string
         ```
 
         Identifier of the shape that contains the color
@@ -4137,13 +4137,13 @@ Comment:
     Properties:
       user: |-
         ```
-        user: User
+        readonly user: User
         ```
 
         The `user` that has created the comment.
       date: |-
         ```
-        date: Date
+        readonly date: Date
         ```
 
         The `date` the comment has been created.
@@ -4189,21 +4189,21 @@ CommentThread:
     Properties:
       seqNumber: |-
         ```
-        seqNumber: number
+        readonly seqNumber: number
         ```
 
         This is the number that is displayed on the workspace. Is an increasing
         sequence for each comment.
       board: |-
         ```
-        board?: Board
+        readonly board?: Board
         ```
 
         If the thread is attached to a `board` this will have that board
         reference.
       owner: |-
         ```
-        owner?: User
+        readonly owner?: User
         ```
 
         Owner of the comment thread
@@ -4526,7 +4526,7 @@ Context:
     Properties:
       root: |-
         ```
-        root: null | Shape
+        readonly root: null | Shape
         ```
 
         The root shape in the current Penpot context. Requires `content:read` permission.
@@ -4537,7 +4537,7 @@ Context:
         ```
       currentFile: |-
         ```
-        currentFile: null | File
+        readonly currentFile: null | File
         ```
 
         Retrieves file data from the current Penpot context. Requires `content:read` permission.
@@ -4552,7 +4552,7 @@ Context:
         ```
       currentPage: |-
         ```
-        currentPage: null | Page
+        readonly currentPage: null | Page
         ```
 
         The current page in the Penpot context. Requires `content:read` permission.
@@ -4563,7 +4563,7 @@ Context:
         ```
       viewport: |-
         ```
-        viewport: Viewport
+        readonly viewport: Viewport
         ```
 
         The viewport settings in the Penpot context.
@@ -4574,7 +4574,7 @@ Context:
         ```
       history: |-
         ```
-        history: HistoryContext
+        readonly history: HistoryContext
         ```
 
         Context encapsulating the history operations
@@ -4585,7 +4585,7 @@ Context:
         ```
       library: |-
         ```
-        library: LibraryContext
+        readonly library: LibraryContext
         ```
 
         The library context in the Penpot context, including both local and connected libraries. Requires `library:read` permission.
@@ -4596,7 +4596,7 @@ Context:
         ```
       fonts: |-
         ```
-        fonts: FontsContext
+        readonly fonts: FontsContext
         ```
 
         The fonts context in the Penpot context, providing methods to manage fonts. Requires `content:read` permission.
@@ -4607,7 +4607,7 @@ Context:
         ```
       currentUser: |-
         ```
-        currentUser: User
+        readonly currentUser: User
         ```
 
         The current user in the Penpot context. Requires `user:read` permission.
@@ -4618,7 +4618,7 @@ Context:
         ```
       activeUsers: |-
         ```
-        activeUsers: ActiveUser[]
+        readonly activeUsers: ActiveUser[]
         ```
 
         An array of active users in the Penpot context. Requires `user:read` permission.
@@ -4629,7 +4629,7 @@ Context:
         ```
       theme: |-
         ```
-        theme: Theme
+        readonly theme: Theme
         ```
 
         The current theme (light or dark) in Penpot.
@@ -4640,7 +4640,7 @@ Context:
         ```
       localStorage: |-
         ```
-        localStorage: LocalStorage
+        readonly localStorage: LocalStorage
         ```
 
         Access to the localStorage proxy
@@ -5402,7 +5402,7 @@ ContextUtils:
     Properties:
       geometry: |-
         ```
-        geometry: ContextGeometryUtils
+        readonly geometry: ContextGeometryUtils
         ```
 
         Geometry utility methods for Penpot.
@@ -5414,7 +5414,7 @@ ContextUtils:
         ```
       types: |-
         ```
-        types: ContextTypesUtils
+        readonly types: ContextTypesUtils
         ```
 
         Type utility methods for Penpot.
@@ -5449,19 +5449,19 @@ Dissolve:
     Properties:
       type: |-
         ```
-        type
+        readonly type
         ```
 
         Type of the animation
       duration: |-
         ```
-        duration: number
+        readonly duration: number
         ```
 
         Duration of the animation effect
       easing: |-
         ```
-        easing?: 
+        readonly easing?: 
             | "linear"
             | "ease"
             | "ease-in"
@@ -5606,7 +5606,7 @@ Ellipse:
         Overrides ShapeBase.fills
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the shape.
@@ -5618,14 +5618,14 @@ Ellipse:
         The name of the shape.
       parent: |-
         ```
-        parent: null | Shape
+        readonly parent: null | Shape
         ```
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
       parentIndex: |-
         ```
-        parentIndex: number
+        readonly parentIndex: number
         ```
 
         Returns the index of the current shape in the parent
@@ -5643,19 +5643,19 @@ Ellipse:
         The y-coordinate of the shape's position.
       width: |-
         ```
-        width: number
+        readonly width: number
         ```
 
         The width of the shape.
       height: |-
         ```
-        height: number
+        readonly height: number
         ```
 
         The height of the shape.
       bounds: |-
         ```
-        bounds: Bounds
+        readonly bounds: Bounds
         ```
 
         Returns
@@ -5663,7 +5663,7 @@ Ellipse:
         Returns the bounding box surrounding the current shape
       center: |-
         ```
-        center: Point
+        readonly center: Point
         ```
 
         Returns
@@ -5843,19 +5843,19 @@ Ellipse:
         The strokes applied to the shape.
       layoutChild: |-
         ```
-        layoutChild?: LayoutChildProperties
+        readonly layoutChild?: LayoutChildProperties
         ```
 
         Layout properties for children of the shape.
       layoutCell: |-
         ```
-        layoutCell?: LayoutChildProperties
+        readonly layoutCell?: LayoutChildProperties
         ```
 
         Layout properties for cells in a grid layout.
       interactions: |-
         ```
-        interactions: Interaction[]
+        readonly interactions: Interaction[]
         ```
 
         The interactions for the current shape.
@@ -6450,7 +6450,7 @@ File:
     Properties:
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The `id` property is a unique identifier for the file.
@@ -6662,20 +6662,20 @@ FileVersion:
         The current label to identify the version.
       createdBy: |-
         ```
-        createdBy?: User
+        readonly createdBy?: User
         ```
 
         The user that created the version. If not present, the
         version is an autosave.
       createdAt: |-
         ```
-        createdAt: Date
+        readonly createdAt: Date
         ```
 
         The date when the version was created.
       isAutosave: |-
         ```
-        isAutosave: boolean
+        readonly isAutosave: boolean
         ```
 
         If the current version has been generated automatically.
@@ -7047,7 +7047,7 @@ Flow:
     Properties:
       page: |-
         ```
-        page: Page
+        readonly page: Page
         ```
 
         The page in which the flow is defined
@@ -7559,14 +7559,14 @@ GridLayout:
         It can be either 'column' or 'row'.
       rows: |-
         ```
-        rows: Track[]
+        readonly rows: Track[]
         ```
 
         The `rows` property represents the collection of rows in the grid.
         This property is read-only.
       columns: |-
         ```
-        columns: Track[]
+        readonly columns: Track[]
         ```
 
         The `columns` property represents the collection of columns in the grid.
@@ -7907,19 +7907,19 @@ Group:
     Properties:
       type: |-
         ```
-        type
+        readonly type
         ```
 
         The type of the shape, which is always 'group' for groups.
       children: |-
         ```
-        children: Shape[]
+        readonly children: Shape[]
         ```
 
         The children shapes contained within the group.
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the shape.
@@ -7931,14 +7931,14 @@ Group:
         The name of the shape.
       parent: |-
         ```
-        parent: null | Shape
+        readonly parent: null | Shape
         ```
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
       parentIndex: |-
         ```
-        parentIndex: number
+        readonly parentIndex: number
         ```
 
         Returns the index of the current shape in the parent
@@ -7956,19 +7956,19 @@ Group:
         The y-coordinate of the shape's position.
       width: |-
         ```
-        width: number
+        readonly width: number
         ```
 
         The width of the shape.
       height: |-
         ```
-        height: number
+        readonly height: number
         ```
 
         The height of the shape.
       bounds: |-
         ```
-        bounds: Bounds
+        readonly bounds: Bounds
         ```
 
         Returns
@@ -7976,7 +7976,7 @@ Group:
         Returns the bounding box surrounding the current shape
       center: |-
         ```
-        center: Point
+        readonly center: Point
         ```
 
         Returns
@@ -8162,19 +8162,19 @@ Group:
         The strokes applied to the shape.
       layoutChild: |-
         ```
-        layoutChild?: LayoutChildProperties
+        readonly layoutChild?: LayoutChildProperties
         ```
 
         Layout properties for children of the shape.
       layoutCell: |-
         ```
-        layoutCell?: LayoutChildProperties
+        readonly layoutCell?: LayoutChildProperties
         ```
 
         Layout properties for cells in a grid layout.
       interactions: |-
         ```
-        interactions: Interaction[]
+        readonly interactions: Interaction[]
         ```
 
         The interactions for the current shape.
@@ -9077,7 +9077,7 @@ Image:
         Overrides ShapeBase.fills
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the shape.
@@ -9089,14 +9089,14 @@ Image:
         The name of the shape.
       parent: |-
         ```
-        parent: null | Shape
+        readonly parent: null | Shape
         ```
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
       parentIndex: |-
         ```
-        parentIndex: number
+        readonly parentIndex: number
         ```
 
         Returns the index of the current shape in the parent
@@ -9114,19 +9114,19 @@ Image:
         The y-coordinate of the shape's position.
       width: |-
         ```
-        width: number
+        readonly width: number
         ```
 
         The width of the shape.
       height: |-
         ```
-        height: number
+        readonly height: number
         ```
 
         The height of the shape.
       bounds: |-
         ```
-        bounds: Bounds
+        readonly bounds: Bounds
         ```
 
         Returns
@@ -9134,7 +9134,7 @@ Image:
         Returns the bounding box surrounding the current shape
       center: |-
         ```
-        center: Point
+        readonly center: Point
         ```
 
         Returns
@@ -9314,19 +9314,19 @@ Image:
         The strokes applied to the shape.
       layoutChild: |-
         ```
-        layoutChild?: LayoutChildProperties
+        readonly layoutChild?: LayoutChildProperties
         ```
 
         Layout properties for children of the shape.
       layoutCell: |-
         ```
-        layoutCell?: LayoutChildProperties
+        readonly layoutCell?: LayoutChildProperties
         ```
 
         Layout properties for cells in a grid layout.
       interactions: |-
         ```
-        interactions: Interaction[]
+        readonly interactions: Interaction[]
         ```
 
         The interactions for the current shape.
@@ -9781,7 +9781,7 @@ Interaction:
     Properties:
       shape: |-
         ```
-        shape?: Shape
+        readonly shape?: Shape
         ```
 
         The shape that owns the interaction
@@ -10065,19 +10065,19 @@ Library:
     Properties:
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the library.
       name: |-
         ```
-        name: string
+        readonly name: string
         ```
 
         The name of the library.
       colors: |-
         ```
-        colors: LibraryColor[]
+        readonly colors: LibraryColor[]
         ```
 
         An array of color elements in the library.
@@ -10088,13 +10088,13 @@ Library:
         ```
       typographies: |-
         ```
-        typographies: LibraryTypography[]
+        readonly typographies: LibraryTypography[]
         ```
 
         An array of typography elements in the library.
       components: |-
         ```
-        components: LibraryComponent[]
+        readonly components: LibraryComponent[]
         ```
 
         An array of component elements in the library.
@@ -10340,13 +10340,13 @@ LibraryColor:
         The image data of the library color, if it's an image fill.
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the library element.
       libraryId: |-
         ```
-        libraryId: string
+        readonly libraryId: string
         ```
 
         The unique identifier of the library to which the element belongs.
@@ -10554,13 +10554,13 @@ LibraryComponent:
     Properties:
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the library element.
       libraryId: |-
         ```
-        libraryId: string
+        readonly libraryId: string
         ```
 
         The unique identifier of the library to which the element belongs.
@@ -10785,13 +10785,13 @@ LibraryVariantComponent:
     Properties:
       variants: |-
         ```
-        variants: null | Variants
+        readonly variants: null | Variants
         ```
 
         Access to the Variant interface, for attributes and actions over the full Variant (not only this VariantComponent)
       variantProps: |-
         ```
-        variantProps: { 
+        readonly variantProps: { 
             [property: string]: string; 
         }
         ```
@@ -10806,13 +10806,13 @@ LibraryVariantComponent:
         this field stores that invalid name
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the library element.
       libraryId: |-
         ```
-        libraryId: string
+        readonly libraryId: string
         ```
 
         The unique identifier of the library to which the element belongs.
@@ -11047,13 +11047,13 @@ LibraryElement:
     Properties:
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the library element.
       libraryId: |-
         ```
-        libraryId: string
+        readonly libraryId: string
         ```
 
         The unique identifier of the library to which the element belongs.
@@ -11216,31 +11216,31 @@ LibrarySummary:
     Properties:
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the library.
       name: |-
         ```
-        name: string
+        readonly name: string
         ```
 
         The name of the library.
       numColors: |-
         ```
-        numColors: number
+        readonly numColors: number
         ```
 
         The number of colors in the library.
       numComponents: |-
         ```
-        numComponents: number
+        readonly numComponents: number
         ```
 
         The number of components in the library.
       numTypographies: |-
         ```
-        numTypographies: number
+        readonly numTypographies: number
         ```
 
         The number of typographies in the library.
@@ -11293,13 +11293,13 @@ LibraryTypography:
     Properties:
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the library element.
       libraryId: |-
         ```
-        libraryId: string
+        readonly libraryId: string
         ```
 
         The unique identifier of the library to which the element belongs.
@@ -11644,25 +11644,25 @@ NavigateTo:
     Properties:
       type: |-
         ```
-        type
+        readonly type
         ```
 
         Type of action
       destination: |-
         ```
-        destination: Board
+        readonly destination: Board
         ```
 
         Board to which the action targets
       preserveScrollPosition: |-
         ```
-        preserveScrollPosition?: boolean
+        readonly preserveScrollPosition?: boolean
         ```
 
         When true the scroll will be preserved.
       animation: |-
         ```
-        animation?: Animation
+        readonly animation?: Animation
         ```
 
         Animation displayed with this interaction.
@@ -11704,25 +11704,25 @@ OpenOverlay:
     Properties:
       type: |-
         ```
-        type
+        readonly type
         ```
 
         The action type
       destination: |-
         ```
-        destination: Board
+        readonly destination: Board
         ```
 
         Overlay board that will be opened.
       relativeTo: |-
         ```
-        relativeTo?: Shape
+        readonly relativeTo?: Shape
         ```
 
         Base shape to which the overlay will be positioned taking constraints into account.
       position: |-
         ```
-        position?: 
+        readonly position?: 
             | "center"
             | "manual"
             | "top-left"
@@ -11736,25 +11736,25 @@ OpenOverlay:
         Positioning of the overlay.
       manualPositionLocation: |-
         ```
-        manualPositionLocation?: Point
+        readonly manualPositionLocation?: Point
         ```
 
         For `position = 'manual'` the location of the overlay.
       closeWhenClickOutside: |-
         ```
-        closeWhenClickOutside?: boolean
+        readonly closeWhenClickOutside?: boolean
         ```
 
         When true the overlay will be closed when clicking outside
       addBackgroundOverlay: |-
         ```
-        addBackgroundOverlay?: boolean
+        readonly addBackgroundOverlay?: boolean
         ```
 
         When true a background will be added to the overlay.
       animation: |-
         ```
-        animation?: Animation
+        readonly animation?: Animation
         ```
 
         Animation displayed with this interaction.
@@ -11777,13 +11777,13 @@ OpenUrl:
     Properties:
       type: |-
         ```
-        type
+        readonly type
         ```
 
         The action type
       url: |-
         ```
-        url: string
+        readonly url: string
         ```
 
         The URL to open when the action is executed
@@ -11823,19 +11823,19 @@ OverlayAction:
     Properties:
       destination: |-
         ```
-        destination: Board
+        readonly destination: Board
         ```
 
         Overlay board that will be opened.
       relativeTo: |-
         ```
-        relativeTo?: Shape
+        readonly relativeTo?: Shape
         ```
 
         Base shape to which the overlay will be positioned taking constraints into account.
       position: |-
         ```
-        position?: 
+        readonly position?: 
             | "center"
             | "manual"
             | "top-left"
@@ -11849,25 +11849,25 @@ OverlayAction:
         Positioning of the overlay.
       manualPositionLocation: |-
         ```
-        manualPositionLocation?: Point
+        readonly manualPositionLocation?: Point
         ```
 
         For `position = 'manual'` the location of the overlay.
       closeWhenClickOutside: |-
         ```
-        closeWhenClickOutside?: boolean
+        readonly closeWhenClickOutside?: boolean
         ```
 
         When true the overlay will be closed when clicking outside
       addBackgroundOverlay: |-
         ```
-        addBackgroundOverlay?: boolean
+        readonly addBackgroundOverlay?: boolean
         ```
 
         When true a background will be added to the overlay.
       animation: |-
         ```
-        animation?: Animation
+        readonly animation?: Animation
         ```
 
         Animation displayed with this interaction.
@@ -11930,7 +11930,7 @@ Page:
     Properties:
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The `id` property is a unique identifier for the page.
@@ -11942,7 +11942,7 @@ Page:
         The `name` property is the name of the page.
       rulerGuides: |-
         ```
-        rulerGuides: RulerGuide[]
+        readonly rulerGuides: RulerGuide[]
         ```
 
         The ruler guides attached to the board
@@ -11955,7 +11955,7 @@ Page:
         Requires `content:read` permission.
       flows: |-
         ```
-        flows: Flow[]
+        readonly flows: Flow[]
         ```
 
         The interaction flows defined for the page.
@@ -12368,7 +12368,7 @@ Path:
     Properties:
       type: |-
         ```
-        type
+        readonly type
         ```
 
         The type of the shape, which is always 'path' for path shapes.
@@ -12404,7 +12404,7 @@ Path:
         Overrides ShapeBase.fills
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the shape.
@@ -12416,14 +12416,14 @@ Path:
         The name of the shape.
       parent: |-
         ```
-        parent: null | Shape
+        readonly parent: null | Shape
         ```
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
       parentIndex: |-
         ```
-        parentIndex: number
+        readonly parentIndex: number
         ```
 
         Returns the index of the current shape in the parent
@@ -12441,19 +12441,19 @@ Path:
         The y-coordinate of the shape's position.
       width: |-
         ```
-        width: number
+        readonly width: number
         ```
 
         The width of the shape.
       height: |-
         ```
-        height: number
+        readonly height: number
         ```
 
         The height of the shape.
       bounds: |-
         ```
-        bounds: Bounds
+        readonly bounds: Bounds
         ```
 
         Returns
@@ -12461,7 +12461,7 @@ Path:
         Returns the bounding box surrounding the current shape
       center: |-
         ```
-        center: Point
+        readonly center: Point
         ```
 
         Returns
@@ -12641,19 +12641,19 @@ Path:
         The strokes applied to the shape.
       layoutChild: |-
         ```
-        layoutChild?: LayoutChildProperties
+        readonly layoutChild?: LayoutChildProperties
         ```
 
         Layout properties for children of the shape.
       layoutCell: |-
         ```
-        layoutCell?: LayoutChildProperties
+        readonly layoutCell?: LayoutChildProperties
         ```
 
         Layout properties for cells in a grid layout.
       interactions: |-
         ```
-        interactions: Interaction[]
+        readonly interactions: Interaction[]
         ```
 
         The interactions for the current shape.
@@ -13416,7 +13416,7 @@ PreviousScreen:
     Properties:
       type: |-
         ```
-        type
+        readonly type
         ```
 
         The action type
@@ -13450,13 +13450,13 @@ Push:
     Properties:
       type: |-
         ```
-        type
+        readonly type
         ```
 
         Type of the animation
       direction: |-
         ```
-        direction: 
+        readonly direction: 
             | "left"
             | "right"
             | "up"
@@ -13466,13 +13466,13 @@ Push:
         Direction for the push animation
       duration: |-
         ```
-        duration: number
+        readonly duration: number
         ```
 
         Duration of the animation effect
       easing: |-
         ```
-        easing?: 
+        readonly easing?: 
             | "linear"
             | "ease"
             | "ease-in"
@@ -13605,7 +13605,7 @@ Rectangle:
     Properties:
       type: |-
         ```
-        type
+        readonly type
         ```
 
         The type of the shape, which is always 'rect' for rectangle shapes.
@@ -13619,7 +13619,7 @@ Rectangle:
         Overrides ShapeBase.fills
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the shape.
@@ -13631,14 +13631,14 @@ Rectangle:
         The name of the shape.
       parent: |-
         ```
-        parent: null | Shape
+        readonly parent: null | Shape
         ```
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
       parentIndex: |-
         ```
-        parentIndex: number
+        readonly parentIndex: number
         ```
 
         Returns the index of the current shape in the parent
@@ -13656,19 +13656,19 @@ Rectangle:
         The y-coordinate of the shape's position.
       width: |-
         ```
-        width: number
+        readonly width: number
         ```
 
         The width of the shape.
       height: |-
         ```
-        height: number
+        readonly height: number
         ```
 
         The height of the shape.
       bounds: |-
         ```
-        bounds: Bounds
+        readonly bounds: Bounds
         ```
 
         Returns
@@ -13676,7 +13676,7 @@ Rectangle:
         Returns the bounding box surrounding the current shape
       center: |-
         ```
-        center: Point
+        readonly center: Point
         ```
 
         Returns
@@ -13856,19 +13856,19 @@ Rectangle:
         The strokes applied to the shape.
       layoutChild: |-
         ```
-        layoutChild?: LayoutChildProperties
+        readonly layoutChild?: LayoutChildProperties
         ```
 
         Layout properties for children of the shape.
       layoutCell: |-
         ```
-        layoutCell?: LayoutChildProperties
+        readonly layoutCell?: LayoutChildProperties
         ```
 
         Layout properties for cells in a grid layout.
       interactions: |-
         ```
-        interactions: Interaction[]
+        readonly interactions: Interaction[]
         ```
 
         The interactions for the current shape.
@@ -14322,7 +14322,7 @@ RulerGuide:
     Properties:
       orientation: |-
         ```
-        orientation: RulerGuideOrientation
+        readonly orientation: RulerGuideOrientation
         ```
 
         `orientation` indicates whether the ruler is either `horizontal` or `vertical`
@@ -14544,7 +14544,7 @@ ShapeBase:
     Properties:
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the shape.
@@ -14556,14 +14556,14 @@ ShapeBase:
         The name of the shape.
       parent: |-
         ```
-        parent: null | Shape
+        readonly parent: null | Shape
         ```
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
       parentIndex: |-
         ```
-        parentIndex: number
+        readonly parentIndex: number
         ```
 
         Returns the index of the current shape in the parent
@@ -14581,19 +14581,19 @@ ShapeBase:
         The y-coordinate of the shape's position.
       width: |-
         ```
-        width: number
+        readonly width: number
         ```
 
         The width of the shape.
       height: |-
         ```
-        height: number
+        readonly height: number
         ```
 
         The height of the shape.
       bounds: |-
         ```
-        bounds: Bounds
+        readonly bounds: Bounds
         ```
 
         Returns
@@ -14601,7 +14601,7 @@ ShapeBase:
         Returns the bounding box surrounding the current shape
       center: |-
         ```
-        center: Point
+        readonly center: Point
         ```
 
         Returns
@@ -14787,19 +14787,19 @@ ShapeBase:
         The strokes applied to the shape.
       layoutChild: |-
         ```
-        layoutChild?: LayoutChildProperties
+        readonly layoutChild?: LayoutChildProperties
         ```
 
         Layout properties for children of the shape.
       layoutCell: |-
         ```
-        layoutCell?: LayoutChildProperties
+        readonly layoutCell?: LayoutChildProperties
         ```
 
         Layout properties for cells in a grid layout.
       interactions: |-
         ```
-        interactions: Interaction[]
+        readonly interactions: Interaction[]
         ```
 
         The interactions for the current shape.
@@ -15264,19 +15264,19 @@ Slide:
     Properties:
       type: |-
         ```
-        type
+        readonly type
         ```
 
         Type of the animation.
       way: |-
         ```
-        way: "in" | "out"
+        readonly way: "in" | "out"
         ```
 
         Indicate if the slide will be either in-to-out `in` or out-to-in `out`.
       direction: |-
         ```
-        direction: 
+        readonly direction: 
             | "left"
             | "right"
             | "up"
@@ -15286,19 +15286,19 @@ Slide:
         Direction for the slide animation.
       duration: |-
         ```
-        duration: number
+        readonly duration: number
         ```
 
         Duration of the animation effect.
       offsetEffect: |-
         ```
-        offsetEffect?: boolean
+        readonly offsetEffect?: boolean
         ```
 
         If `true` the offset effect will be used.
       easing: |-
         ```
-        easing?: 
+        readonly easing?: 
             | "linear"
             | "ease"
             | "ease-in"
@@ -15530,7 +15530,7 @@ SvgRaw:
     Properties:
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the shape.
@@ -15542,14 +15542,14 @@ SvgRaw:
         The name of the shape.
       parent: |-
         ```
-        parent: null | Shape
+        readonly parent: null | Shape
         ```
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
       parentIndex: |-
         ```
-        parentIndex: number
+        readonly parentIndex: number
         ```
 
         Returns the index of the current shape in the parent
@@ -15567,19 +15567,19 @@ SvgRaw:
         The y-coordinate of the shape's position.
       width: |-
         ```
-        width: number
+        readonly width: number
         ```
 
         The width of the shape.
       height: |-
         ```
-        height: number
+        readonly height: number
         ```
 
         The height of the shape.
       bounds: |-
         ```
-        bounds: Bounds
+        readonly bounds: Bounds
         ```
 
         Returns
@@ -15587,7 +15587,7 @@ SvgRaw:
         Returns the bounding box surrounding the current shape
       center: |-
         ```
-        center: Point
+        readonly center: Point
         ```
 
         Returns
@@ -15773,19 +15773,19 @@ SvgRaw:
         The strokes applied to the shape.
       layoutChild: |-
         ```
-        layoutChild?: LayoutChildProperties
+        readonly layoutChild?: LayoutChildProperties
         ```
 
         Layout properties for children of the shape.
       layoutCell: |-
         ```
-        layoutCell?: LayoutChildProperties
+        readonly layoutCell?: LayoutChildProperties
         ```
 
         Layout properties for cells in a grid layout.
       interactions: |-
         ```
-        interactions: Interaction[]
+        readonly interactions: Interaction[]
         ```
 
         The interactions for the current shape.
@@ -16389,7 +16389,7 @@ Text:
     Properties:
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the shape.
@@ -16401,14 +16401,14 @@ Text:
         The name of the shape.
       parent: |-
         ```
-        parent: null | Shape
+        readonly parent: null | Shape
         ```
 
         The parent shape. If the shape is the first level the parent will be the root shape.
         For the root shape the parent is null
       parentIndex: |-
         ```
-        parentIndex: number
+        readonly parentIndex: number
         ```
 
         Returns the index of the current shape in the parent
@@ -16426,19 +16426,19 @@ Text:
         The y-coordinate of the shape's position.
       width: |-
         ```
-        width: number
+        readonly width: number
         ```
 
         The width of the shape.
       height: |-
         ```
-        height: number
+        readonly height: number
         ```
 
         The height of the shape.
       bounds: |-
         ```
-        bounds: Bounds
+        readonly bounds: Bounds
         ```
 
         Returns
@@ -16446,7 +16446,7 @@ Text:
         Returns the bounding box surrounding the current shape
       center: |-
         ```
-        center: Point
+        readonly center: Point
         ```
 
         Returns
@@ -16632,25 +16632,25 @@ Text:
         The strokes applied to the shape.
       layoutChild: |-
         ```
-        layoutChild?: LayoutChildProperties
+        readonly layoutChild?: LayoutChildProperties
         ```
 
         Layout properties for children of the shape.
       layoutCell: |-
         ```
-        layoutCell?: LayoutChildProperties
+        readonly layoutCell?: LayoutChildProperties
         ```
 
         Layout properties for cells in a grid layout.
       interactions: |-
         ```
-        interactions: Interaction[]
+        readonly interactions: Interaction[]
         ```
 
         The interactions for the current shape.
       type: |-
         ```
-        type
+        readonly type
         ```
 
         The type of the shape, which is always 'text' for text shapes.
@@ -17315,13 +17315,13 @@ TextRange:
     Properties:
       shape: |-
         ```
-        shape: Text
+        readonly shape: Text
         ```
 
         The Text shape to which this text range belongs.
       characters: |-
         ```
-        characters: string
+        readonly characters: string
         ```
 
         The characters associated with the current text range.
@@ -17497,19 +17497,19 @@ ToggleOverlay:
     Properties:
       destination: |-
         ```
-        destination: Board
+        readonly destination: Board
         ```
 
         Overlay board that will be opened.
       relativeTo: |-
         ```
-        relativeTo?: Shape
+        readonly relativeTo?: Shape
         ```
 
         Base shape to which the overlay will be positioned taking constraints into account.
       position: |-
         ```
-        position?: 
+        readonly position?: 
             | "center"
             | "manual"
             | "top-left"
@@ -17523,31 +17523,31 @@ ToggleOverlay:
         Positioning of the overlay.
       manualPositionLocation: |-
         ```
-        manualPositionLocation?: Point
+        readonly manualPositionLocation?: Point
         ```
 
         For `position = 'manual'` the location of the overlay.
       closeWhenClickOutside: |-
         ```
-        closeWhenClickOutside?: boolean
+        readonly closeWhenClickOutside?: boolean
         ```
 
         When true the overlay will be closed when clicking outside
       addBackgroundOverlay: |-
         ```
-        addBackgroundOverlay?: boolean
+        readonly addBackgroundOverlay?: boolean
         ```
 
         When true a background will be added to the overlay.
       animation: |-
         ```
-        animation?: Animation
+        readonly animation?: Animation
         ```
 
         Animation displayed with this interaction.
       type: |-
         ```
-        type
+        readonly type
         ```
 
         The action type
@@ -17615,7 +17615,7 @@ User:
     Properties:
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the user.
@@ -17626,7 +17626,7 @@ User:
         ```
       name: |-
         ```
-        name?: string
+        readonly name?: string
         ```
 
         The name of the user.
@@ -17637,7 +17637,7 @@ User:
         ```
       avatarUrl: |-
         ```
-        avatarUrl?: string
+        readonly avatarUrl?: string
         ```
 
         The URL of the user's avatar image.
@@ -17648,7 +17648,7 @@ User:
         ```
       color: |-
         ```
-        color: string
+        readonly color: string
         ```
 
         The color associated with the user.
@@ -17659,7 +17659,7 @@ User:
         ```
       sessionId: |-
         ```
-        sessionId?: string
+        readonly sessionId?: string
         ```
 
         The session ID of the user.
@@ -17694,14 +17694,14 @@ Variants:
     Properties:
       id: |-
         ```
-        id: string
+        readonly id: string
         ```
 
         The unique identifier of the variant element. It is the id of the VariantContainer, and all the VariantComponents
         that belong to this variant have an attribute variantId which this is as value.
       libraryId: |-
         ```
-        libraryId: string
+        readonly libraryId: string
         ```
 
         The unique identifier of the library to which the variant belongs.
@@ -17815,7 +17815,7 @@ Viewport:
         the `zoom` level as a number where `1` represents 100%.
       bounds: |-
         ```
-        bounds: Bounds
+        readonly bounds: Bounds
         ```
 
         the `bounds` are the current coordinates of the viewport.

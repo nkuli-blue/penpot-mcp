@@ -33,7 +33,9 @@ class PenpotAPIContentMarkdownConverter(MarkdownConverter):
 
         text = soup.get_text()
 
-        # convert tags for "Readonly" and "Optional" designations
+        # convert tsd-tag code elements (containing e.g. "Readonly" and "Optional" designations)
+        # If we encounter them at this level, we just remove them, as they are redundant.
+        # The significant such tags are handled in the tsd-signature processing below.
         if node.name == "code" and "class" in node.attrs and "tsd-tag" in node.attrs["class"]:
             return ""
 
@@ -65,8 +67,17 @@ class PenpotAPIContentMarkdownConverter(MarkdownConverter):
 
         # convert tsd-signature elements to code blocks, converting <br> to newlines
         if "class" in node.attrs and "tsd-signature" in node.attrs["class"]:
+            # convert <br> to newlines
             for br in soup.find_all("br"):
                 br.replace_with("\n")
+            # process tsd-tags (keeping only "readonly"; optional is redundant, as it is indicated via "?")
+            for tag in soup.find_all(attrs={"class": "tsd-tag"}):
+                tag_lower = tag.get_text().strip().lower()
+                if tag_lower in ["readonly"]:
+                    tag.replace_with(f"{tag_lower} ")
+                else:
+                    tag.decompose()
+            # return as code block
             return f"\n```\n{soup.get_text()}\n```\n\n"
 
         # other cases: use the default processing
@@ -141,7 +152,7 @@ class PenpotAPIDocsProcessor:
             if href.startswith("interfaces/") or href.startswith("types/"):
                 type_name = href.split("/")[-1].replace(".html", "")
                 log.info("Processing page: %s", type_name)
-                type_info = self._process_page(href, type_name)
+                type_info = self.process_page(href, type_name)
                 self.types[type_name] = type_info
 
         # add type reference information
@@ -167,7 +178,7 @@ class PenpotAPIDocsProcessor:
         md = md.replace("\xa0", " ")  # replace non-breaking spaces
         return md.strip()
 
-    def _process_page(self, rel_url: str, type_name: str) -> TypeInfo:
+    def process_page(self, rel_url: str, type_name: str) -> TypeInfo:
         html_content = self._fetch(rel_url)
         soup = BeautifulSoup(html_content, "html.parser")
 
@@ -187,8 +198,20 @@ class PenpotAPIDocsProcessor:
                     for member_tag in el.find_all(attrs={"class": "tsd-member"}):
                         member_anchor = member_tag.find("a", attrs={"class": "tsd-anchor"}, recursive=False)
                         member_name = member_anchor.attrs["id"]
-                        member_tag.find("h3").decompose()  # remove heading
-                        members_in_group[member_name] = self._html_to_markdown(str(member_tag))
+                        member_heading = member_tag.find("h3")
+                        # extract tsd-tag info (e.g., "Readonly") from the heading and reinsert it into the signature,
+                        # where we want to see it. The heading is removed, as it is redundant.
+                        if member_heading:
+                            tags_in_heading = member_heading.find_all(attrs={"class": "tsd-tag"})
+                            if tags_in_heading:
+                                signature_tag = member_tag.find(attrs={"class": "tsd-signature"})
+                                if signature_tag:
+                                    for tag in reversed(tags_in_heading):
+                                        signature_tag.insert(0, tag)
+                        member_heading.decompose()
+                        # convert to markdown
+                        tag_text = str(member_tag)
+                        members_in_group[member_name] = self._html_to_markdown(tag_text)
 
         # record references to other types in signature
         signature = content.find("div", attrs={"class": "tsd-signature"})
@@ -214,5 +237,23 @@ def main():
     PenpotAPIDocsProcessor().run(target_dir=str(target_dir))
 
 
+def debug_type_conversion(rel_url: str):
+    """
+    This function is for debugging purposes only.
+    It processes a single type page and prints the converted markdown to the console.
+
+    :param rel_url: relative URL of the type page (e.g., "interfaces/ShapeBase")
+    """
+    type_name = rel_url.split("/")[-1]
+    processor = PenpotAPIDocsProcessor()
+    type_info = processor.process_page(rel_url, type_name)
+    print(f"--- overview ---\n{type_info.overview}\n")
+    for member_type, members in type_info.members.items():
+        print(f"\n{member_type}:")
+        for member_name, member_md in members.items():
+            print(f"--- {member_name} ---\n{member_md}\n")
+
+
 if __name__ == '__main__':
+    # debug_type_conversion("interfaces/ShapeBase")
     logging.run_main(main)
