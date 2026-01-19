@@ -113,6 +113,7 @@ initial_instructions: |
   A key object to use in your code is the `penpot` object (which is of type `Penpot`):
     * `penpot.selection` provides the list of shapes the user has selected in the Penpot UI.
        If it is unclear which elements to work on, you can ask the user to select them for you.
+       ALWAYS immediately copy the selected shape(s) into `storage`! Do not assume that the selection remains unchanged.
     * `penpot.root` provides the root shape of the currently active page.
     * Generation of CSS content for elements via `penpot.generateStyle`
     * Generation of HTML/SVG content for elements via `penpot.generateMarkup`
