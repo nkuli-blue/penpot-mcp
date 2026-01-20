@@ -86,7 +86,11 @@ initial_instructions: |
     * **Flex Layout**: `board.flex` - A flexbox-style layout system
       - Properties: `dir` (direction), `rowGap`, `columnGap`, `alignItems`, `justifyContent`
       - Padding: `topPadding`, `rightPadding`, `bottomPadding`, `leftPadding`, or combined `verticalPadding`, `horizontalPadding`
-      - When a board has flex layout, child positions are controlled by the layout system, not by individual x/y coordinates
+      - When a board has flex layout, 
+         - child positions are controlled by the layout system, not by individual x/y coordinates;
+           appending or inserting children automatically positions them according to the layout rules.
+         - IMPORTANT: The order of the `children` array is reversed, but insertion indices correspond to visual order,
+           i.e. inserting at index 0 places the child visually first, but the child appears last in the `children` array.
       - To modify spacing: adjust `rowGap` and `columnGap` properties, not individual child positions
       - Check with: `if (board.flex) { /* board uses flex layout */ }`
     
