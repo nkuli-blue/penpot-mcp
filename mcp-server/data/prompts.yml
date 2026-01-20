@@ -106,11 +106,13 @@ initial_instructions: |
 
   # Text Elements
 
-  Text shapes have specific characteristics:
-    * Text elements may have baseline alignment constraints that affect positioning
-    * Small positioning deviations (1-2px) may occur due to text rendering and baseline snapping
-    * When precise spacing is needed between text elements, consider using flex layouts with `rowGap`
-    * Text content is accessed via the `characters` property
+  The rendered content of `Text` element is given by the `characters` property.
+
+  To change the size of the text, change the `fontSize` property; applying `resize()` does NOT change the font size,
+  it only changes the formal bounding box; if the text does not fit it, it will overflow.
+  The bounding box is sized automatically as long as the `growType` property is set to "auto-width" or "auto-height".
+  `resize` always sets `growType` to "fixed", so ALWAYS set it back to "auto-*" if you want automatic sizing - otherwise the bounding box will be meaningless, with the text overflowing!
+  The auto-sizing is not immediate; sleep for a short time (100ms) if you want to read the updated bounding box.
 
   # The `penpot` and `penpotUtils` Objects, Exploring Designs
 
