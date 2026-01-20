@@ -137,8 +137,9 @@ initial_instructions: |
     * findShape(predicate: (shape: Shape) => boolean, root: Shape | null = null): Shape | null
       If no root is provided, search globally (in all pages).
     * findShapes(predicate: (shape: Shape) => boolean, root: Shape | null = null): Shape[]
-    * isContainedIn(child: Shape, parent: Shape): boolean
-      Returns true if child is fully within parent's visual bounds
+    * isContainedIn(shape: Shape, container: Shape): boolean
+      Returns true iff shape is fully within the container's geometric bounds.
+      Note that a shape's bounds may not always reflect its actual visual content - descendants can overflow; check using analyzeDescendants (see below). 
     * setParentXY(shape: Shape, parentX: number, parentY: number): void
       Sets shape position relative to its parent (since parentX/parentY are read-only)
     * analyzeDescendants<T>(root: Shape, evaluator: (root: Shape, descendant: Shape) => T | null | undefined, maxDepth?: number): Array<{ shape: Shape, result: T }>
@@ -166,7 +167,7 @@ initial_instructions: |
         const structure = penpotUtils.shapeStructure(penpot.selection[0]);
     * Find shapes in current selection/board:
         const shapes = penpotUtils.findShapes(predicate, penpot.selection[0] || penpot.root);
-    * Validate/analyze descendants (returns corrector functions):
+    * Validate/analyze descendants (returning corrector functions):
         const fixes = penpotUtils.analyzeDescendants(board, (root, shape) => {
           const xMod = shape.parentX % 4;
           if (xMod !== 0) {
@@ -178,6 +179,7 @@ initial_instructions: |
         const violations = penpotUtils.analyzeDescendants(board, (root, shape) => {
           return !penpotUtils.isContainedIn(shape, root) ? 'outside-bounds' : null;
         });
+        Always validate against the root container that is supposed to contain the shapes.
 
   # Visual Inspection of Designs
 
