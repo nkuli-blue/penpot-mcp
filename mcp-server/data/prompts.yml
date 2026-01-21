@@ -83,24 +83,30 @@ initial_instructions: |
 
   Boards can have layout systems that automatically control the positioning and spacing of their children:
 
-    * **Flex Layout**: `board.flex` - A flexbox-style layout system
-      - Properties: `dir` (direction), `rowGap`, `columnGap`, `alignItems`, `justifyContent`
+    * **Flex Layout**: A flexbox-style layout system
+      - Add to a board with `board.addFlexLayout(): FlexLayout`; instance then accessibly via `board.flex`;
+        Check with: `if (board.flex) { ... }`
+      - Properties: `dir`, `rowGap`, `columnGap`, `alignItems`, `justifyContent`;
+         - `dir`: "row" | "column" | "row-reverse" | "column-reverse"
       - Padding: `topPadding`, `rightPadding`, `bottomPadding`, `leftPadding`, or combined `verticalPadding`, `horizontalPadding`
       - When a board has flex layout, 
          - child positions are controlled by the layout system, not by individual x/y coordinates;
            appending or inserting children automatically positions them according to the layout rules.
-         - IMPORTANT: The order of the `children` array is reversed, but insertion indices correspond to visual order,
-           i.e. inserting at index 0 places the child visually first, but the child appears last in the `children` array.
+         - CRITICAL: For for dir="column" or dir="row", the order of the `children` array is reversed relative to the visual order, but insertion indices correspond to visual order,
+           i.e. inserting at index 0  places the child visually first, but the child will actually last in the `children` array.
+           ALWAYS BEAR IN MIND THAT THE CHILDREN ARRAY ORDER IS REVERSED FOR dir="column" OR dir="row"!
       - To modify spacing: adjust `rowGap` and `columnGap` properties, not individual child positions
-      - Check with: `if (board.flex) { /* board uses flex layout */ }`
     
-    * **Grid Layout**: `board.grid` - A CSS grid-style layout system
+    * **Grid Layout**: A CSS grid-style layout system
+      - Add to a board with `board.addFlexLayout(): FlexLayout`; instance then accessibly via `board.grid`;
+        Check with: `if (board.grid) { ... }`
       - Properties: `rows`, `columns`, `rowGap`, `columnGap`
-      - Children are positioned according to grid cells
-      - Check with: `if (board.grid) { /* board uses grid layout */ }`
+      - Children are positioned via 1-based row/column indices
+          - Add to grid via `board.flex.appendChild(shape, row, column)` 
+          - Modify grid positioning after the fact via `shape.layoutCell: LayoutCellProperties`
     
-    * When working with layouts:
-      - ALWAYS check if a board has a layout system before attempting to reposition children
+    * When working with boards:
+      - ALWAYS check if the board has a layout system before attempting to reposition children
       - Modify layout properties (gaps, padding) instead of trying to set child x/y positions directly
       - Layout systems override manual positioning of children
 
