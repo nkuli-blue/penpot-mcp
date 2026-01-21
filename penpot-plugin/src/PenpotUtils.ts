@@ -383,8 +383,6 @@ export class PenpotUtils {
                 for (const fill of fills) {
                     if (fill.fillImage) {
                         const imageData = fill.fillImage;
-                        // TODO: fix ts-ignore once Penpot types are updated to include data() method
-                        // @ts-ignore
                         return imageData.data();
                     }
                 }

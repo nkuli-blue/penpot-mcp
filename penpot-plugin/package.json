@@ -11,8 +11,8 @@
     },
     "dependencies": {
         "@penpot-mcp/common": "file:../common",
-        "@penpot/plugin-styles": "1.3.2",
-        "@penpot/plugin-types": "1.3.2",
+        "@penpot/plugin-styles": "1.4.1",
+        "@penpot/plugin-types": "1.4.1",
         "penpot-mcp": "file:.."
     },
     "devDependencies": {
