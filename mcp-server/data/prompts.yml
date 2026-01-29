@@ -88,11 +88,10 @@ initial_instructions: |
   Boards can have layout systems that automatically control the positioning and spacing of their children:
 
     * **Flex Layout**: A flexbox-style layout system
-      - Add to a board with `board.addFlexLayout(): FlexLayout`; instance then accessibly via `board.flex`;
-        Check with: `if (board.flex) { ... }`
       - Properties: `dir`, `rowGap`, `columnGap`, `alignItems`, `justifyContent`;
          - `dir`: "row" | "column" | "row-reverse" | "column-reverse"
-      - Padding: `topPadding`, `rightPadding`, `bottomPadding`, `leftPadding`, or combined `verticalPadding`, `horizontalPadding`
+         - Padding: `topPadding`, `rightPadding`, `bottomPadding`, `leftPadding`, or combined `verticalPadding`, `horizontalPadding`
+         - To modify spacing: adjust `rowGap` and `columnGap` properties, not individual child positions
       - When a board has flex layout, 
          - child positions are controlled by the layout system, not by individual x/y coordinates;
            appending or inserting children automatically positions them according to the layout rules.
@@ -104,10 +103,14 @@ initial_instructions: |
         of the `children` array for dir="column" or dir="row", which is what you want. So call it in the order of visual appearance.
         To insert at a specific index, use `board.insertChild(index, shape)`, bearing in mind the reversed order for dir="column" 
         or dir="row".
-      - To modify spacing: adjust `rowGap` and `columnGap` properties, not individual child positions
+      - Add to a board with `board.addFlexLayout(): FlexLayout`; instance then accessible via `board.flex`.
+        IMPORTANT: When adding a flex layout to a container that already has children, 
+        use `penpotUtils.addFlexLayout(container, dir)` instead! This preserves the existing visual order of children.
+        Otherwise, children will be arbitrarily reordered when the children order suddenly determines the display order. 
+      - Check with: `if (board.flex) { ... }`
     
     * **Grid Layout**: A CSS grid-style layout system
-      - Add to a board with `board.addFlexLayout(): FlexLayout`; instance then accessibly via `board.grid`;
+      - Add to a board with `board.addGridLayout(): GridLayout`; instance then accessibly via `board.grid`;
         Check with: `if (board.grid) { ... }`
       - Properties: `rows`, `columns`, `rowGap`, `columnGap`
       - Children are positioned via 1-based row/column indices

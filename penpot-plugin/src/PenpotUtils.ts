@@ -1,4 +1,4 @@
-import { Fill, FlexLayout, GridLayout, Page, Rectangle, Shape } from "@penpot/plugin-types";
+import { Board, Fill, FlexLayout, GridLayout, Page, Rectangle, Shape } from "@penpot/plugin-types";
 
 export class PenpotUtils {
     /**
@@ -196,6 +196,37 @@ export class PenpotUtils {
         }
         shape.x = shape.parent.x + parentX;
         shape.y = shape.parent.y + parentY;
+    }
+
+    /**
+     * Adds a flex layout to a container while preserving the visual order of existing children.
+     * Without this, adding a flex layout can arbitrarily reorder children.
+     *
+     * The method sorts children by their current position (x for "row", y for "column") before
+     * adding the layout, then reorders them to maintain that visual sequence.
+     *
+     * @param container - The container (board) to add the flex layout to
+     * @param dir - The layout direction: "row" for horizontal, "column" for vertical
+     * @returns The created FlexLayout instance
+     */
+    public static addFlexLayout(container: Board, dir: "column" | "row"): FlexLayout {
+        // obtain children sorted by position (ascending)
+        const children = "children" in container && container.children ? [...container.children] : [];
+        const sortedChildren = children.sort((a, b) => (dir === "row" ? a.x - b.x : a.y - b.y));
+
+        // add the flex layout
+        const flexLayout = container.addFlexLayout();
+        flexLayout.dir = dir;
+
+        // reorder children to preserve visual order; since the children array is reversed
+        // relative to visual order for dir="column" or dir="row", we insert each child at
+        // index 0 in sorted order, which places the first (smallest position) at the highest
+        // index, making it appear first visually
+        for (const child of sortedChildren) {
+            child.setParentIndex(0);
+        }
+
+        return flexLayout;
     }
 
     /**
