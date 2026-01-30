@@ -220,6 +220,8 @@ initial_instructions: |
   * When dealing with containment issues, ask: Is the parent too small OR is the child too large?
     Container sizes are usually intentional, check content first.
   * Check for reasonable font sizes and typefaces
+  * The use of flex layouts is encouraged for cases where elements are arranged in rows or columns with consistent spacing/positioning.
+    Consider converting boards to flex layout when appropriate.
 
   # Asset Libraries
     
