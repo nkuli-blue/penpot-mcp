@@ -15,6 +15,9 @@ from sensai.util import logging
 log = logging.getLogger(__name__)
 
 
+API_DOCS_URL = "https://doc.plugins.penpot.app"
+
+
 class PenpotAPIContentMarkdownConverter(MarkdownConverter):
     """
     Markdown converter for Penpot API docs, specifically for the .col-content element
@@ -99,6 +102,10 @@ class TypeInfo:
         if referencing_types:
             self.overview += "\n\nReferenced by: " + ", ".join(sorted(referencing_types))
 
+    def __repr__(self) -> str:
+        num_members = {k: len(v) for k, v in self.members.items()}
+        return f"TypeInfo(overview_length={len(self.overview)}, num_members={num_members})"
+
 
 class YamlConverter:
     """Converts dictionaries to YAML with all strings in block literal style"""
@@ -133,7 +140,7 @@ class YamlConverter:
 class PenpotAPIDocsProcessor:
     def __init__(self):
         self.md_converter = PenpotAPIContentMarkdownConverter()
-        self.base_url = "https://penpot-plugins-api-doc.pages.dev"
+        self.base_url = API_DOCS_URL
         self.types: dict[str, TypeInfo] = {}
         self.type_referenced_by: dict[str, set[str]] = collections.defaultdict(set)
 
@@ -153,6 +160,7 @@ class PenpotAPIDocsProcessor:
                 type_name = href.split("/")[-1].replace(".html", "")
                 log.info("Processing page: %s", type_name)
                 type_info = self.process_page(href, type_name)
+                print(f"Adding '{type_name}' with {type_info}")
                 self.types[type_name] = type_info
 
         # add type reference information
@@ -166,11 +174,11 @@ class PenpotAPIDocsProcessor:
         data_dict = {k: dataclasses.asdict(v) for k, v in self.types.items()}
         YamlConverter().to_file(data_dict, yaml_path)
 
-    def _fetch(self, rel_url: str) -> str:
+    def _fetch(self, rel_url: str) -> bytes:
         response = requests.get(f"{self.base_url}/{rel_url}")
         if response.status_code != 200:
             raise Exception(f"Failed to retrieve page: {response.status_code}")
-        html_content = response.text
+        html_content = response.content
         return html_content
 
     def _html_to_markdown(self, html_content: str) -> str:
@@ -255,5 +263,5 @@ def debug_type_conversion(rel_url: str):
 
 
 if __name__ == '__main__':
-    # debug_type_conversion("interfaces/ShapeBase")
+    # debug_type_conversion("interfaces/LayoutChildProperties")
     logging.run_main(main)
