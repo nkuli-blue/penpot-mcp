@@ -1,11 +1,11 @@
+> [!IMPORTANT]
+> This repository has been archived on 2026-02-03.  
+> Its contents have been fully integrated into the main Penpot repository:
+> https://github.com/penpot/penpot/tree/develop/mcp
+
 ![mcp-server-cover-github-1](https://github.com/user-attachments/assets/dcd14e63-fecd-424f-9a50-c1b1eafe2a4f)
 
 # Penpot's Official MCP Server
-
-**IMPORTANT:** This repository is archived. Its contents and
-development have been fully integrated into the main Penpot project:
-https://github.com/penpot/penpot
-
 
 Penpot integrates a LLM layer built on the Model Context Protocol (MCP) via Penpot's Plugin API to interact with a Penpot design file. Penpot's MCP server enables LLMs to perfom data queries, transformation and creation operations.
 
