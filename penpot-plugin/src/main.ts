@@ -1,5 +1,9 @@
 import "./style.css";
 
+// Auto-reconnect configuration
+const MAX_RECONNECT_ATTEMPTS = 10;
+const RECONNECT_BASE_DELAY_MS = 1000;
+
 // get the current theme from the URL
 const searchParams = new URLSearchParams(window.location.search);
 document.body.dataset.theme = searchParams.get("theme") ?? "light";
@@ -11,6 +15,9 @@ console.log("Penpot MCP multi-user mode:", isMultiUserMode);
 // WebSocket connection management
 let ws: WebSocket | null = null;
 const statusElement = document.getElementById("connection-status");
+let reconnectAttempts = 0;
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+let isManualDisconnect = false;
 
 /**
  * Updates the connection status display element.
@@ -42,6 +49,52 @@ function sendTaskResponse(response: any): void {
 }
 
 /**
+ * Schedules an automatic reconnection attempt with exponential backoff.
+ */
+function scheduleReconnect(): void {
+    if (isManualDisconnect) return;
+    if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+        updateConnectionStatus("Max reconnect attempts reached", false);
+        console.warn("Auto-reconnect: max attempts reached, giving up.");
+        return;
+    }
+    reconnectAttempts++;
+    const delay = RECONNECT_BASE_DELAY_MS * Math.pow(2, reconnectAttempts - 1);
+    const cappedDelay = Math.min(delay, 30000); // cap at 30s
+    updateConnectionStatus(`Reconnecting in ${cappedDelay / 1000}s...`, false);
+    console.log(`Auto-reconnect: attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS} in ${cappedDelay}ms`);
+
+    reconnectTimer = setTimeout(() => {
+        if (ws?.readyState !== WebSocket.OPEN && !isManualDisconnect) {
+            connectToMcpServer();
+        }
+    }, cappedDelay);
+}
+
+/**
+ * Stops any pending auto-reconnect attempts.
+ */
+function stopAutoReconnect(): void {
+    if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+    }
+}
+
+/**
+ * Disconnects the WebSocket and stops auto-reconnect.
+ */
+function disconnectFromMcpServer(): void {
+    isManualDisconnect = true;
+    stopAutoReconnect();
+    if (ws) {
+        ws.close();
+        ws = null;
+    }
+    updateConnectionStatus("Disconnected", false);
+}
+
+/**
  * Establishes a WebSocket connection to the MCP server.
  */
 function connectToMcpServer(): void {
@@ -49,6 +102,10 @@ function connectToMcpServer(): void {
         updateConnectionStatus("Already connected", true);
         return;
     }
+
+    // If this is a manual reconnection, reset the flag
+    isManualDisconnect = false;
+    stopAutoReconnect();
 
     try {
         let wsUrl = PENPOT_MCP_WEBSOCKET_URL;
@@ -61,6 +118,8 @@ function connectToMcpServer(): void {
         updateConnectionStatus("Connecting...", false);
 
         ws.onopen = () => {
+            reconnectAttempts = 0;
+            isManualDisconnect = false;
             console.log("Connected to MCP server");
             updateConnectionStatus("Connected to MCP server", true);
         };
@@ -79,8 +138,13 @@ function connectToMcpServer(): void {
         ws.onclose = (event: CloseEvent) => {
             console.log("Disconnected from MCP server");
             const message = event.reason || undefined;
-            updateConnectionStatus("Disconnected", false, message);
             ws = null;
+            // Only auto-reconnect if this was not a manual disconnect
+            if (!isManualDisconnect) {
+                scheduleReconnect();
+            } else {
+                updateConnectionStatus("Disconnected", false, message);
+            }
         };
 
         ws.onerror = (error) => {
@@ -92,11 +156,20 @@ function connectToMcpServer(): void {
         console.error("Failed to connect to MCP server:", error);
         const message = error instanceof Error ? error.message : undefined;
         updateConnectionStatus("Connection failed", false, message);
+        // Schedule reconnect after connection failure too
+        if (!isManualDisconnect) {
+            scheduleReconnect();
+        }
     }
 }
 
 document.querySelector("[data-handler='connect-mcp']")?.addEventListener("click", () => {
+    isManualDisconnect = false;
     connectToMcpServer();
+});
+
+document.getElementById("disconnect-mcp")?.addEventListener("click", () => {
+    disconnectFromMcpServer();
 });
 
 // Listen plugin.ts messages

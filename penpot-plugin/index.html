@@ -1,14 +1,20 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Penpot plugin example</title>
+        <title>Penpot MCP Plugin</title>
+        <style>
+            body { font-family: system-ui, sans-serif; padding: 12px; }
+            button { width: 100%; padding: 8px; margin-bottom: 8px; cursor: pointer; border-radius: 4px; border: 1px solid #ccc; }
+            #connection-status { margin-top: 8px; font-size: 11px; text-align: center; }
+        </style>
     </head>
     <body>
         <button type="button" data-appearance="secondary" data-handler="connect-mcp">Connect to MCP server</button>
+        <button type="button" data-appearance="secondary" id="disconnect-mcp" style="display:none;">Disconnect</button>
 
-        <div id="connection-status" style="margin-top: 10px; font-size: 12px; color: #666">Not connected</div>
+        <div id="connection-status">Not connected</div>
 
         <script type="module" src="/src/main.ts"></script>
     </body>
